@@ -33,6 +33,20 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
+	postId, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	// Fetch user from the database
+	var post Models.Post
+	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("Hashtags").Preload("User").Preload("Mentions").First(&post).Error; err != nil {
+		// User not found, return error response
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+	// Return successful response with the user data
+	utils.JSONResponse(w, http.StatusOK, post)
 }
 
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
@@ -54,7 +68,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userID, err := utils.GetUserIDFromContext(r.Context())
-	
+
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
