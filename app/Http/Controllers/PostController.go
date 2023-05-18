@@ -196,17 +196,17 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 
 // Update Post Title
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
-    // Parse post ID from request parameters
-    postID, err := utils.GetParam(r, "id")
+	// Parse post ID from request parameters
+	postID, err := utils.GetParam(r, "id")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
-
-    // Parse update data from request body
-    var updateData struct {
-        Title string `json:"title"`
-    }
+	log.Println(postID)
+	// Parse update data from request body
+	var updateData struct {
+		Title string `json:"title"`
+	}
 	if err := utils.DecodeJSONBody(w, r, &updateData); err != nil {
 		var mr *utils.MalformedRequest
 		if errors.As(err, &mr) {
@@ -217,16 +217,16 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-    // Validate post request
+	// Validate post request
 	if err := utils.ValidateRequest(w, &updateData); err != nil {
 		return
 	}
-	
-    // Perform update in the database for the specified post ID
-    // ...
 
-    // Return success response
-    w.WriteHeader(http.StatusOK)
+	// Perform update in the database for the specified post ID
+	// ...
+
+	// Return success response
+	w.WriteHeader(http.StatusOK)
 }
 
 func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
