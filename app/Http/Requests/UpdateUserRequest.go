@@ -13,7 +13,7 @@ type UpdateUserRequest struct {
 	Country            string    `json:"country" validate:"omitempty,alpha,max=50"`
 	City               string    `json:"city" validate:"omitempty,alpha,max=50"`
 	MobileNoCode       string    `json:"mobile_no_code" validate:"required"`
-	Birthday           time.Time `json:"birthday" validate:"omitempty,time"`
+	Birthday           *time.Time `json:"birthday" validate:"omitempty,time"`
 	BackgroundImageURL string    `json:"background_image_url"`
 	WebsiteURL         string    `json:"website_url" validate:"omitempty,url"`
 	Occupation         string    `json:"occupation" validate:"omitempty,max=50"`

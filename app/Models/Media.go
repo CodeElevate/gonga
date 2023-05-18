@@ -9,7 +9,7 @@ type Media struct {
     URL         string `json:"url"`
     Type        string `json:"type"`
     OwnerType   string `json:"owner_type"` // post, comment, profile, etc.
-    OwnerID     uint   `json:"-"`
+    OwnerID     uint   `json:"owner_id"`
 }
 
 func (Media) TableName() string {

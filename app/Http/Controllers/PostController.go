@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"errors"
 	requests "gonga/app/Http/Requests"
 	"gonga/app/Models"
 	cloudinary "gonga/packages/Cloudinary"
 	"gonga/utils"
+	"log"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -36,15 +38,27 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse update request from request body
 	var createReq requests.CreatePostRequest
-	if err := utils.DecodeRequestBody(r, &createReq); err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+
+	if err := utils.DecodeJSONBody(w, r, &createReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
 		return
 	}
-	// Validate the update request
+	// Validate post request
 	if err := utils.ValidateRequest(w, &createReq); err != nil {
 		return
 	}
-
+	userID, err := utils.GetUserIDFromContext(r.Context())
+	
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
 	newPost := Models.Post{
 		Title:           createReq.Title,
 		Body:            createReq.Body,
@@ -53,7 +67,9 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		IsPublished:     createReq.IsPublished,
 		PromotionExpiry: createReq.PromotionExpiry,
 		FeaturedExpiry:  createReq.FeaturedExpiry,
+		UserID:          uint(userID.(float64)),
 	}
+	// Insert the post in the database
 	result := c.DB.Create(&newPost)
 	if result.Error != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
