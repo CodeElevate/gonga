@@ -14,6 +14,7 @@ type Comment struct {
 	Likes    []Like   `json:"-" gorm:"foreignKey:CommentID"`
 	ParentID *uint    `json:"-"`
 	Parent   *Comment `json:"parent" gorm:"foreignKey:ParentID"`
+	Mentions []*Mention `json:"mentions" gorm:"polymorphic:Owner;"`
 }
 
 func (Comment) TableName() string {

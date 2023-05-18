@@ -12,13 +12,11 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
-
 type PostController struct {
 	DB *gorm.DB
 }
 
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
-
 	var posts []Models.Post
 	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias")
 
@@ -28,7 +26,6 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	}
 	// Send the list of users in JSON format
 	utils.JSONResponse(w, http.StatusOK, result)
-	// Handle GET /postcontroller request
 }
 
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
