@@ -18,7 +18,7 @@ type Post struct {
 	CommentCount    uint      `json:"comment_count"`
 	ViewCount       uint      `json:"view_count"`
 	ShareCount      uint      `json:"share_count"`
-	Medias          []Media   `json:"medias" gorm:"polymorphic:Owner;"`
+	Medias          []*Media  `json:"medias" gorm:"polymorphic:Owner;"`
 	Hashtags        []*Tag    `json:"hashtags" gorm:"many2many:post_hashtags;"`
 	Mentions        []*User   `json:"mentions" gorm:"many2many:post_mentions;"`
 	IsPromoted      bool      `json:"is_promoted"`

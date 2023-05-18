@@ -20,7 +20,7 @@ type PostController struct {
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 
 	var posts []Models.Post
-	result, err := utils.Paginate(r, c.DB, &posts, "User")
+	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias")
 
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
@@ -40,7 +40,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	// Fetch user from the database
 	var post Models.Post
-	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("Hashtags").Preload("User").Preload("Mentions").First(&post).Error; err != nil {
+	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("User").First(&post).Error; err != nil {
 		// User not found, return error response
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -85,10 +85,27 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	// Insert the post in the database
 	result := c.DB.Create(&newPost)
+
 	if result.Error != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
 		return
 	}
+
+	// Associate the media files with the post
+    for _, newMedia := range createReq.Medias {
+        mediaID := newMedia.ID // Get the ID of the uploaded media
+
+        // Fetch the media record from the database
+        var media Models.Media
+        if err := c.DB.First(&media, mediaID).Error; err != nil {
+            utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to associate media with the post"})
+            return
+        }
+        // Update the owner ID of the media to the ID of the newly created post
+        media.OwnerID = newPost.ID
+        c.DB.Save(&media)
+    }
+
 
 	// Send email or notification to subscribed users
 	// if err := sendPasswordResetEmail(passwordReset.Email, token); err != nil {

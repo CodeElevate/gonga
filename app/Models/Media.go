@@ -6,10 +6,10 @@ import (
 
 type Media struct {
     gorm.Model
-    URL         string `json:"url"`
-    Type        string `json:"type"`
-    OwnerType   string `json:"owner_type"` // post, comment, profile, etc.
-    OwnerID     uint   `json:"owner_id"`
+    URL       string `json:"url"`
+    Type      string `json:"type"`
+    OwnerID   uint   `json:"owner_id"`
+    OwnerType string `json:"owner_type"` // post, comment, profile, etc.
 }
 
 func (Media) TableName() string {

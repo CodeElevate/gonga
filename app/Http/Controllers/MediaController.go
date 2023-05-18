@@ -60,10 +60,10 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 
 	ownerType := r.FormValue("owner_type") // Get the owner type from the request form data
 	if ownerType == "" {
-		ownerType = "post" // Fallback value for owner type (assuming it's a post)
+		ownerType = "posts" // Fallback value for owner type (assuming it's a post)
 	}
 	ownerID := r.FormValue("owner_id") // Get the owner ID from the request form data
-
+	
 	cloudinaryClient := cloudinary.NewCloudinaryClient()
 
 	for _, fileHeader := range files {
@@ -88,7 +88,6 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 			Type:      result.Type,           // Set the appropriate media type
 			OwnerType: ownerType,             // Set the owner type dynamically or fallback to "post"
 			OwnerID:   parseOwnerID(ownerID), // Parse the owner ID based on its type (post, comment, etc.)
-
 		}
 		c.DB.Create(&media)
 		// Send response
