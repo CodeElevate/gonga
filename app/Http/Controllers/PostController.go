@@ -19,7 +19,7 @@ type PostController struct {
 
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
-	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias", "Mentions.User")
+	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias", "Mentions.User", "Hashtags")
 
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
@@ -38,7 +38,15 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	// Fetch user from the database
 	var post Models.Post
-	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("Mentions.User").Preload("User").First(&post).Error; err != nil {
+	if err := c.DB.Where("id = ?", postId).
+		Preload("Medias").
+		Preload("Mentions.User").
+		Preload("User").
+		Preload("Hashtags", func(db *gorm.DB) *gorm.DB {
+			// Exclude the "User" field from being loaded for hashtags
+			return db.Omit("User")
+		}).
+		First(&post).Error; err != nil {
 		// User not found, return error response
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -117,6 +125,42 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
 			return
 		}
+	}
+
+	// Create a slice to store the tags
+	var tags []Models.Tag
+
+	// Iterate over the tag titles
+	for _, hashtag := range createReq.Hashtags {
+		tag := Models.Tag{}
+
+		// Check if the tag already exists in the database
+		if err := c.DB.Where("title = ?", hashtag.Title).First(&tag).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// Create a new tag since it doesn't exist
+				tag = Models.Tag{
+					Title:  hashtag.Title,
+					UserID: uint(userID.(float64)),
+					// Set other tag fields as needed
+				}
+				if err := c.DB.Create(&tag).Error; err != nil {
+					utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+					return
+				}
+			} else {
+				utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				return
+			}
+		}
+
+		// Append the tag to the slice
+		tags = append(tags, tag)
+	}
+
+	// Associate the tags with the post
+	if err := c.DB.Model(&newPost).Association("Hashtags").Replace(tags); err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
 	}
 
 	// Send email or notification to subscribed users
