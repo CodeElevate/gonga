@@ -165,6 +165,7 @@ func ValidateRequest(w http.ResponseWriter, rules interface{}) error {
 		response := ErrorResponse{Errors: errors}
 		// Send the error response
 		JSONResponse(w, http.StatusBadRequest, response)
+		
 		return err
 	}
 	return nil

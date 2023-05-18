@@ -21,7 +21,9 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	PostController := controllers.PostController{DB: db}
 	NotificationController := controllers.NotificationController{DB: db}
 	FollowController := controllers.FollowController{DB: db}
+	MediaController := controllers.MediaController{DB: db}
 
+	router.Post("/upload", MediaController.Upload, middlewares.AuthMiddleware)
 	// User API endpoint handlers
 	router.Get("/users", UserController.Index)
 	router.Get("/users/{username}", UserController.Show)
@@ -30,9 +32,22 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 
 	// Post API endpoint handlers
 	router.Get("/posts", PostController.Index)
-	router.Post("/posts", PostController.Create, middlewares.AuthMiddleware)//, middlewares.AuthMiddleware
-	router.Get("/posts/{id}", PostController.Show)
+	router.Post("/posts", PostController.Create, middlewares.AuthMiddleware) //, middlewares.AuthMiddleware
+	router.Get("/posts/{id}", PostController.Show, middlewares.AuthMiddleware)
+
 	router.Put("/posts/{id}", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/title", PostController.UpdateTitle, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/body", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/medias", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/hashtags", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/mentions", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/visibility", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/is_promoted", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/is_featured", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/promotion_expiry", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/featured_expiry", PostController.Update, middlewares.AuthMiddleware)
+
+	
 	router.Delete("/posts/{id}", PostController.Delete, middlewares.AuthMiddleware)
 	// router.Get("/posts/{id}/comments", PostController.Comments, middlewares.AuthMiddleware)
 	// router.Post("/posts/{id}/comments", PostController.CreateComment, middlewares.AuthMiddleware)

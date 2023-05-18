@@ -29,6 +29,7 @@ func MigrateCmd(app *bootstrap.Application) *cobra.Command {
 				&Models.Post{},
 				&Models.PasswordReset{},
 				&Models.PersonalAccessToken{},
+				&Models.Mention{},
 			)
 			if err != nil {
 				log.Fatalf("Error running migrations: %v", err)
