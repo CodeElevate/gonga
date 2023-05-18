@@ -6,6 +6,7 @@ import (
 	cloudinary "gonga/packages/Cloudinary"
 	"gonga/utils"
 	"net/http"
+	"strconv"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -28,27 +29,26 @@ type MediaController struct {
 // The response includes the URL, type, filename, size, and ID for each uploaded file.
 //
 // Example:
-// 
-//  POST /upload HTTP/1.1
-//  Host: example.com
-//  Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 //
-//  ------WebKitFormBoundary7MA4YWxkTrZu0gW
-//  Content-Disposition: form-data; name="files"; filename="image1.jpg"
-//  Content-Type: image/jpeg
+//	POST /upload HTTP/1.1
+//	Host: example.com
+//	Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 //
-//  <binary data>
+//	------WebKitFormBoundary7MA4YWxkTrZu0gW
+//	Content-Disposition: form-data; name="files"; filename="image1.jpg"
+//	Content-Type: image/jpeg
 //
-//  ------WebKitFormBoundary7MA4YWxkTrZu0gW
-//  Content-Disposition: form-data; name="files"; filename="image2.jpg"
-//  Content-Type: image/jpeg
+//	<binary data>
 //
-//  <binary data>
+//	------WebKitFormBoundary7MA4YWxkTrZu0gW
+//	Content-Disposition: form-data; name="files"; filename="image2.jpg"
+//	Content-Type: image/jpeg
 //
-//  ------WebKitFormBoundary7MA4YWxkTrZu0gW--
+//	<binary data>
 //
+//	------WebKitFormBoundary7MA4YWxkTrZu0gW--
 func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
-	// Handle POST /media/upload request
+	// Handle POST /upload request
 	err := r.ParseMultipartForm(32 << 20) // Max upload file size: 32MB
 	if err != nil {
 		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": "Failed to parse multipart form"})
@@ -57,6 +57,12 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 
 	files := r.MultipartForm.File["files"]      // Assuming "files" is the name of the file input field for multiple uploads
 	var results []responses.UploadMediaResponse // Store the upload results for each file
+
+	ownerType := r.FormValue("owner_type") // Get the owner type from the request form data
+	if ownerType == "" {
+		ownerType = "post" // Fallback value for owner type (assuming it's a post)
+	}
+	ownerID := r.FormValue("owner_id") // Get the owner ID from the request form data
 
 	cloudinaryClient := cloudinary.NewCloudinaryClient()
 
@@ -79,8 +85,10 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 		// Store the media record in the database
 		media := Models.Media{
 			URL:       result.URL,
-			Type:      result.Type, // Set the appropriate media type
-			OwnerType: "post",      // Set the owner type (e.g., "post", "comment")
+			Type:      result.Type,           // Set the appropriate media type
+			OwnerType: ownerType,             // Set the owner type dynamically or fallback to "post"
+			OwnerID:   parseOwnerID(ownerID), // Parse the owner ID based on its type (post, comment, etc.)
+
 		}
 		c.DB.Create(&media)
 		// Send response
@@ -95,4 +103,14 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	utils.JSONResponse(w, http.StatusOK, results)
+}
+
+// parseOwnerID is a helper function to parse the owner ID based on its type.
+// Modify this function based on your actual implementation.
+func parseOwnerID(ownerID string) uint {
+	// Parse the owner ID based on its type (post, comment, etc.)
+	// Modify this function based on your actual implementation.
+	// Example: Convert ownerID to uint and return it
+	parsedOwnerID, _ := strconv.ParseUint(ownerID, 10, 64)
+	return uint(parsedOwnerID)
 }
