@@ -12,13 +12,14 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
 type PostController struct {
 	DB *gorm.DB
 }
 
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
-	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias")
+	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias", "Mentions.User")
 
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
@@ -37,7 +38,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 	// Fetch user from the database
 	var post Models.Post
-	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("User").First(&post).Error; err != nil {
+	if err := c.DB.Where("id = ?", postId).Preload("Medias").Preload("Mentions.User").Preload("User").First(&post).Error; err != nil {
 		// User not found, return error response
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
@@ -89,20 +90,34 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Associate the media files with the post
-    for _, newMedia := range createReq.Medias {
-        mediaID := newMedia.ID // Get the ID of the uploaded media
+	for _, newMedia := range createReq.Medias {
+		mediaID := newMedia.ID // Get the ID of the uploaded media
 
-        // Fetch the media record from the database
-        var media Models.Media
-        if err := c.DB.First(&media, mediaID).Error; err != nil {
-            utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to associate media with the post"})
-            return
-        }
-        // Update the owner ID of the media to the ID of the newly created post
-        media.OwnerID = newPost.ID
-        c.DB.Save(&media)
-    }
+		// Fetch the media record from the database
+		var media Models.Media
+		if err := c.DB.First(&media, mediaID).Error; err != nil {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to associate media with the post"})
+			return
+		}
+		// Update the owner ID of the media to the ID of the newly created post
+		media.OwnerID = newPost.ID
+		c.DB.Save(&media)
+	}
 
+	// Iterate over the mention user IDs
+	for _, mentionedUser := range createReq.Mentions {
+		log.Println(mentionedUser.UserID)
+		mention := &Models.Mention{
+			UserID:    mentionedUser.UserID,
+			OwnerID:   newPost.ID,
+			OwnerType: "posts",
+		}
+		// Save the mention to the database
+		if err := c.DB.Create(&mention).Error; err != nil {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			return
+		}
+	}
 
 	// Send email or notification to subscribed users
 	// if err := sendPasswordResetEmail(passwordReset.Email, token); err != nil {
