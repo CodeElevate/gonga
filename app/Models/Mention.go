@@ -9,7 +9,8 @@ type Mention struct {
     UserID    uint   `json:"user_id"`
     User      User   `json:"user"`
     OwnerID   uint   `json:"owner_id"`
-    OwnerType string `json:"owner_type"` // post, comment, etc.
+    OwnerType string `json:"owner_type"` // posts, comments, etc.
+    Position   int    `json:"position"`   // position of the mention in the content
 }
 
 func (Mention) TableName() string {
