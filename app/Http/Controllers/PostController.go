@@ -36,6 +36,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
+
 	// Fetch user from the database
 	var post Models.Post
 	if err := c.DB.Where("id = ?", postId).
@@ -84,7 +85,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		Body:            createReq.Body,
 		IsPromoted:      createReq.IsPromoted,
 		IsFeatured:      createReq.IsFeatured,
-		IsPublished:     createReq.IsPublished,
+		Visibility:      createReq.Visibility,
 		PromotionExpiry: createReq.PromotionExpiry,
 		FeaturedExpiry:  createReq.FeaturedExpiry,
 		UserID:          uint(userID.(float64)),
@@ -191,6 +192,41 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	utils.JSONResponse(w, http.StatusOK, result)
+}
+
+// Update Post Title
+func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
+    // Parse post ID from request parameters
+    postID, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+    // Parse update data from request body
+    var updateData struct {
+        Title string `json:"title"`
+    }
+	if err := utils.DecodeJSONBody(w, r, &updateData); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+    // Validate post request
+	if err := utils.ValidateRequest(w, &updateData); err != nil {
+		return
+	}
+	
+    // Perform update in the database for the specified post ID
+    // ...
+
+    // Return success response
+    w.WriteHeader(http.StatusOK)
 }
 
 func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
