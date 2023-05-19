@@ -1,6 +1,9 @@
 package requests
 
-import "gonga/app/Models"
+import (
+	"gonga/app/Models"
+	"time"
+)
 
 type UpdatePostRequest struct {
 }
@@ -20,4 +23,12 @@ type UpdatePostMediaRequest struct {
 
 type UpdatePostHashtagRequest struct {
 	Hashtags []Models.Tag `json:"hashtags" validate:"min=1,max=5"`
+}
+
+type UpdatePostSettingsRequest struct {
+	IsPromoted      *bool              `json:"is_promoted" validate:"required"`
+	PromotionExpiry time.Time         `json:"promotion_expiry" validate:"required"`
+	IsFeatured      *bool              `json:"is_featured" validate:"required"`
+	FeaturedExpiry  *time.Time         `json:"featured_expiry" validate:"required"`
+	Visibility      Models.Visibility `json:"visibility" validate:"required"`
 }

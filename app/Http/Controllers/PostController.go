@@ -438,6 +438,63 @@ func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
 }
 
+func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	postID, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostSettingsRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the database for the specified post ID
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+		return
+	}
+	log.Println(updateReq.IsFeatured,updateReq.IsPromoted,updateReq.FeaturedExpiry,updateReq.PromotionExpiry)
+	// Update the fields based on the provided update request if the values are not empty or null
+	if updateReq.Visibility != "" {
+		post.Visibility = updateReq.Visibility
+	}
+	post.IsPromoted = *updateReq.IsPromoted
+	post.IsFeatured = *updateReq.IsFeatured
+	post.PromotionExpiry = updateReq.PromotionExpiry
+	post.FeaturedExpiry = *updateReq.FeaturedExpiry
+
+	// Save the updated post in the database
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
+
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post settings updated successfully!"})
+}
+
 func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Handle DELETE /postcontroller/{id} request
 }
