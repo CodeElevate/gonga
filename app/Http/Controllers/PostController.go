@@ -4,12 +4,11 @@ import (
 	"errors"
 	requests "gonga/app/Http/Requests"
 	"gonga/app/Models"
-	cloudinary "gonga/packages/Cloudinary"
+	services "gonga/app/Services"
 	"gonga/utils"
 	"log"
 	"net/http"
 
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -33,7 +32,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postId, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
 	}
 
@@ -49,7 +48,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 		}).
 		First(&post).Error; err != nil {
 		// User not found, return error response
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": err.Error()})
 		return
 	}
 	// Return successful response with the user data
@@ -176,38 +175,44 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 	// Handle PUT /postcontroller/{id} request
 	// You can get the request body by reading from r.Body
 	// You can send a response by writing to w
-	file, _, err := r.FormFile("file")
-	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-		return
-	}
-	defer file.Close()
-	// Generate a unique public ID for the file
-	publicID := uuid.New().String()
+	// file, _, err := r.FormFile("file")
+	// if err != nil {
+	// 	utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+	// 	return
+	// }
+	// defer file.Close()
+	// // Generate a unique public ID for the file
+	// publicID := uuid.New().String()
 
-	cloudinaryClient := cloudinary.NewCloudinaryClient()
-	result, err := cloudinaryClient.UploadImage(file, publicID)
-	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
-		return
-	}
-	utils.JSONResponse(w, http.StatusOK, result)
+	// cloudinaryClient := cloudinary.NewCloudinaryClient()
+	// result, err := cloudinaryClient.UploadImage(file, publicID)
+	// if err != nil {
+	// 	utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+	// 	return
+	// }
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "this is still not implemented"})
 }
 
 // Update Post Title
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
 	postID, err := utils.GetParam(r, "id")
+
 	if err != nil {
 		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	log.Println(postID)
+
 	// Parse update data from request body
-	var updateData struct {
-		Title string `json:"title"`
-	}
-	if err := utils.DecodeJSONBody(w, r, &updateData); err != nil {
+	var updateReq requests.UpdatePostTitleRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
 		var mr *utils.MalformedRequest
 		if errors.As(err, &mr) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
@@ -218,17 +223,314 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Validate post request
-	if err := utils.ValidateRequest(w, &updateData); err != nil {
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
 		return
 	}
 
 	// Perform update in the database for the specified post ID
-	// ...
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
 
+		return
+	}
+
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		return
+	}
+	// Update the post title
+	post.Title = updateReq.Title
+
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
 	// Return success response
-	w.WriteHeader(http.StatusOK)
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post title updated successfully!"})
 }
 
-func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
-	// Handle DELETE /postcontroller/{id} request
+// Update Post Body
+func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	postID, err := utils.GetParam(r, "id")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostBodyRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the database for the specified post ID
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+
+		return
+	}
+
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		return
+	}
+	// Update the post title
+	post.Body = updateReq.Body
+
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
+
+	// Perform the edit mentions operation
+	err = services.EditMentions(c.DB, post.ID, "posts", updateReq.Mentions)
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post body updated successfully!"})
+}
+
+func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	postID, err := utils.GetParam(r, "id")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostMediaRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the database for the specified post ID
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+
+		return
+	}
+
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		return
+	}
+
+	// Perform the edit mentions operation
+	err = services.EditMedia(c.DB, post.ID, "posts", updateReq.Medias)
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
+}
+
+func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	postID, err := utils.GetParam(r, "id")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostHashtagRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the service for the specified post ID
+	err = services.EditTags(c.DB, postID, updateReq.Hashtags, uint(userID.(float64)))
+	if err != nil {
+		if err.Error() == "post not found" {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			log.Println(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update post tags"})
+		}
+		return
+	}
+
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
+}
+
+func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	postID, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostSettingsRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the database for the specified post ID
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+		return
+	}
+	log.Println(updateReq.IsFeatured, updateReq.IsPromoted, updateReq.FeaturedExpiry, updateReq.PromotionExpiry)
+	// Update the fields based on the provided update request if the values are not empty or null
+	if updateReq.Visibility != "" {
+		post.Visibility = updateReq.Visibility
+	}
+	post.IsPromoted = *updateReq.IsPromoted
+	post.IsFeatured = *updateReq.IsFeatured
+	post.PromotionExpiry = updateReq.PromotionExpiry
+	post.FeaturedExpiry = *updateReq.FeaturedExpiry
+
+	// Save the updated post in the database
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
+
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post settings updated successfully!"})
+}
+
+func (c *PostController) Delete(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	postID, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Get the authenticated user ID from the context
+	userID, err := utils.GetUserIDFromContext(r.Context())
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	// Retrieve the post from the database
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+		return
+	}
+
+	// Check if the authenticated user is the owner of the post
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to delete this post"})
+		return
+	}
+
+	// Delete the post from the database
+	if err := c.DB.Delete(&post).Error; err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
 }
