@@ -15,16 +15,26 @@ type UserController struct {
 }
 
 func (uc UserController) Index(w http.ResponseWriter, r *http.Request) {
-
 	var users []Models.User
-	result, err := utils.Paginate(r, uc.DB, &users, "Posts")
+	var pagination utils.Pagination
 
+	paginationScope, err := utils.Paginate(r, uc.DB, &users, &pagination)
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	// Send the list of users in JSON format
-	utils.JSONResponse(w, http.StatusOK, result)
+
+	db := paginationScope(uc.DB)
+	if err := db.Find(&users).Error; err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Set the items value in the pagination struct
+	pagination.Items = users
+
+	// Send the response with the pagination struct
+	utils.JSONResponse(w, http.StatusOK, pagination)
 }
 
 // swagger:response UserResponse
