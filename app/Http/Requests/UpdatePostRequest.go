@@ -13,3 +13,7 @@ type UpdatePostBodyRequest struct {
 	Body     string           `json:"body" validate:"required,min=40"`
 	Mentions []Models.Mention `json:"mentions" validate:"omitempty,max=15"`
 }
+
+type UpdatePostMediaRequest struct {
+	Medias []Models.Media `json:"medias" validate:"omitempty,max=15"`
+}

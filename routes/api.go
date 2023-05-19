@@ -4,8 +4,6 @@ import (
 	controllers "gonga/app/Http/Controllers"
 	middlewares "gonga/app/Http/Middlewares"
 	"gonga/packages"
-	"log"
-	"net/http"
 
 	"gorm.io/gorm"
 )
@@ -40,9 +38,8 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	router.Put("/posts/{id}", PostController.Update, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/title", PostController.UpdateTitle, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/body", PostController.UpdateBody, middlewares.AuthMiddleware)
-	// router.Put("/posts/{id}/medias", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/medias", PostController.UpdateMedia, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/hashtags", PostController.Update, middlewares.AuthMiddleware)
-	// router.Put("/posts/{id}/mentions", PostController.Update, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/visibility", PostController.Update, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/is_promoted", PostController.Update, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/is_featured", PostController.Update, middlewares.AuthMiddleware)
@@ -74,13 +71,6 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 
 	// Register Auth Routes
 	RegisterAuthRoutes(router, db)
+	
 
-	// Set the "not found" handler
-	router.NotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Log the message indicating that the route is not found
-		log.Println("Route not found:", r.URL.Path)
-
-		// Return a response with an appropriate error message
-		http.NotFound(w, r)
-	})
 }
