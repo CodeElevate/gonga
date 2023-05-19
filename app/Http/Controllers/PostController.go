@@ -15,18 +15,29 @@ import (
 type PostController struct {
 	DB *gorm.DB
 }
-
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
-	result, err := utils.Paginate(r, c.DB, &posts, "User", "Medias", "Mentions.User", "Hashtags")
+	var pagination utils.Pagination
 
+	paginationScope, err := utils.Paginate(r, c.DB, &posts, &pagination, "User", "Medias", "Mentions.User", "Hashtags")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	// Send the list of users in JSON format
-	utils.JSONResponse(w, http.StatusOK, result)
+
+	db := paginationScope(c.DB)
+	if err := db.Find(&posts).Error; err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Set the items value in the pagination struct
+	pagination.Items = posts
+
+	// Send the response with the pagination struct
+	utils.JSONResponse(w, http.StatusOK, pagination)
 }
+
 
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request

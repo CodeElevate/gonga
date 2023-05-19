@@ -1,6 +1,9 @@
 package controllers
 
 import (
+	"gonga/app/Models"
+	services "gonga/app/Services"
+	"gonga/utils"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -11,9 +14,28 @@ type CommentController struct {
 }
 
 func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
-	// Handle GET /commentcontroller request
-}
+	// Handle GET /postcontroller/{id} request
+	postID, err := utils.GetParam(r, "id")
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
 
+	// Handle GET /commentcontroller request
+	var comments []Models.Comment
+	// result, err := utils.Paginate(r, c.DB, &comments, "User", "Medias", "Mentions.User")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.DB.Preload("User").Preload("Likes").Where("post_id = ? AND parent_id IS NULL", postID).Find(&comments)
+	for i := range comments {
+		services.LoadNestedComments(&comments[i], c.DB)
+	}
+	// Send the list of users in JSON format
+	utils.JSONResponse(w, http.StatusOK, comments)
+}
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /commentcontroller/{id} request
 }

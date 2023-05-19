@@ -1,21 +1,54 @@
 package utils
 
 import (
+	"log"
 	"math"
 	"net/http"
 
 	"gorm.io/gorm"
 )
 
+type Pagination struct {
+	Page         int         `json:"page"`
+	PerPage      int         `json:"per_page"`
+	Sort         string      `json:"sort"`
+	TotalRecords int         `json:"total_records"`
+	TotalPages   int         `json:"total_pages"`
+	Remaining    int         `json:"remaining"`
+	Items        interface{} `json:"items"`
+}
+
+func (p *Pagination) GetOffset() int {
+	return (p.GetPage() - 1) * p.GetPerPage()
+}
+
+func (p *Pagination) GetPerPage() int {
+	if p.PerPage == 0 {
+		p.PerPage = 10
+	}
+	return p.PerPage
+}
+
+func (p *Pagination) GetPage() int {
+	if p.Page == 0 {
+		p.Page = 1
+	}
+	return p.Page
+}
+
+func (p *Pagination) GetSort() string {
+	if p.Sort == "" {
+		p.Sort = "created_at asc"
+	}
+	return p.Sort
+}
+
 // Paginate performs pagination on the given database query, based on the page and per_page parameters in the provided HTTP request.
 // It returns a PaginatedResult struct containing the paginated items, as well as metadata such as the total number of records, total number of pages, and the number of remaining items.
 // The out parameter should be a pointer to a slice that will hold the paginated items.
 // If any errors occur during pagination, an error is returned.
-func Paginate(r *http.Request, db *gorm.DB, out interface{}, associations ...string) (PaginatedResult, error) {
-
+func Paginate(r *http.Request, db *gorm.DB, out interface{}, pagination *Pagination, associations ...string) (func(db *gorm.DB) *gorm.DB, error) {
 	page, perPage := GetPaginationParams(r, 1, 10)
-
-	var result PaginatedResult
 
 	// calculate the offset based on the current page and number of items per page
 	offset := (page - 1) * perPage
@@ -23,15 +56,8 @@ func Paginate(r *http.Request, db *gorm.DB, out interface{}, associations ...str
 	// get the total number of records
 	var count int64
 	if err := db.Model(out).Count(&count).Error; err != nil {
-		return result, err
-	}
-	// preload specified relationships
-	for _, association := range associations {
-		db = db.Preload(association)
-	}
-	// get the paginated items
-	if err := db.Offset(offset).Limit(perPage).Find(out).Error; err != nil {
-		return result, err
+		log.Println(err.Error())
+		return nil, err
 	}
 
 	// calculate the total number of pages based on the total number of records and items per page
@@ -39,18 +65,27 @@ func Paginate(r *http.Request, db *gorm.DB, out interface{}, associations ...str
 
 	// calculate the number of remaining items
 	remaining := int(count) - (page * perPage)
-
 	if remaining < 0 {
 		remaining = 0
 	}
-	result = PaginatedResult{
-		Page:         page,
-		PerPage:      perPage,
-		TotalRecords: int(count),
-		TotalPages:   totalPages,
-		Items:        out,
-		Remaining:    remaining,
+
+	// Update the pagination struct with the values
+	pagination.Page = page
+	pagination.PerPage = perPage
+	pagination.Sort = pagination.GetSort()
+	pagination.TotalRecords = int(count)
+	pagination.TotalPages = totalPages
+	pagination.Remaining = remaining
+
+	scopeFunc := func(db *gorm.DB) *gorm.DB {
+		// preload specified relationships
+		for _, association := range associations {
+			db = db.Preload(association)
+		}
+
+		// Apply pagination scopes
+		return db.Offset(offset).Limit(perPage).Order(pagination.GetSort())
 	}
 
-	return result, nil
+	return scopeFunc, nil
 }
