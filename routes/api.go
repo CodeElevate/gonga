@@ -22,6 +22,7 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	NotificationController := controllers.NotificationController{DB: db}
 	FollowController := controllers.FollowController{DB: db}
 	MediaController := controllers.MediaController{DB: db}
+	CommentController := controllers.CommentController{DB: db}
 
 	router.Post("/upload", MediaController.Upload, middlewares.AuthMiddleware)
 	// User API endpoint handlers
@@ -40,10 +41,17 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	router.Put("/posts/{id}/medias", PostController.UpdateMedia, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/hashtags", PostController.UpdateHashtag, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/settings", PostController.UpdatePostSettings, middlewares.AuthMiddleware)
-	
 	router.Delete("/posts/{id}", PostController.Delete, middlewares.AuthMiddleware)
-	// router.Get("/posts/{id}/comments", PostController.Comments, middlewares.AuthMiddleware)
-	// router.Post("/posts/{id}/comments", PostController.CreateComment, middlewares.AuthMiddleware)
+  
+
+	// Comment API endpoint handlers
+	router.Get("/posts/{id}/comments", CommentController.Index)
+	router.Post("/posts/{id}/comments", CommentController.Create, middlewares.AuthMiddleware)
+	router.Get("/comments/{id}", CommentController.Show)
+	router.Put("/comments/{id}", CommentController.Update, middlewares.AuthMiddleware)
+	router.Delete("/comments/{id}", CommentController.Delete, middlewares.AuthMiddleware)
+	
+	// Search API endpoint handlers
 	// router.Post("/posts/{id}/like", PostController.Like, middlewares.AuthMiddleware)
 	// router.Post("/posts/{id}/unlike", PostController.Unlike, middlewares.AuthMiddleware)
 
