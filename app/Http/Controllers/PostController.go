@@ -389,6 +389,55 @@ func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
 }
 
+func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	postID, err := utils.GetParam(r, "id")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostHashtagRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the service for the specified post ID
+	err = services.EditTags(c.DB, postID, updateReq.Hashtags, uint(userID.(float64)))
+	if err != nil {
+		if err.Error() == "post not found" {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			log.Println(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update post tags"})
+		}
+		return
+	}
+
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
+}
+
 func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Handle DELETE /postcontroller/{id} request
 }

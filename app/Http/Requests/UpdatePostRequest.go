@@ -17,3 +17,7 @@ type UpdatePostBodyRequest struct {
 type UpdatePostMediaRequest struct {
 	Medias []Models.Media `json:"medias" validate:"omitempty,max=15"`
 }
+
+type UpdatePostHashtagRequest struct {
+	Hashtags []Models.Tag `json:"hashtags" validate:"min=1,max=5"`
+}

@@ -33,13 +33,13 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	// Post API endpoint handlers
 	router.Get("/posts", PostController.Index)
 	router.Post("/posts", PostController.Create, middlewares.AuthMiddleware) //, middlewares.AuthMiddleware
-	router.Get("/posts/{id}", PostController.Show, middlewares.AuthMiddleware)
-
+	router.Get("/posts/{id}", PostController.Show)
 	router.Put("/posts/{id}", PostController.Update, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/title", PostController.UpdateTitle, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/body", PostController.UpdateBody, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/medias", PostController.UpdateMedia, middlewares.AuthMiddleware)
-	// router.Put("/posts/{id}/hashtags", PostController.Update, middlewares.AuthMiddleware)
+	router.Put("/posts/{id}/hashtags", PostController.UpdateHashtag, middlewares.AuthMiddleware)
+
 	// router.Put("/posts/{id}/visibility", PostController.Update, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/is_promoted", PostController.Update, middlewares.AuthMiddleware)
 	// router.Put("/posts/{id}/is_featured", PostController.Update, middlewares.AuthMiddleware)
