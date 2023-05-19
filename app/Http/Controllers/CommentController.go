@@ -23,21 +23,33 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 
 	// Handle GET /commentcontroller request
 	var comments []Models.Comment
-	// result, err := utils.Paginate(r, c.DB, &comments, "User", "Medias", "Mentions.User")
+	var pagination utils.Pagination
 
+	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.DB.Preload("User").Preload("Likes").Where("post_id = ? AND parent_id IS NULL", postID).Find(&comments)
+
+	db := paginationScope(c.DB)
+
+	if err := db.Where("post_id = ? AND parent_id IS NULL", postID).Find(&comments).Error; err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 	for i := range comments {
 		services.LoadNestedComments(&comments[i], c.DB)
 	}
-	// Send the list of users in JSON format
-	utils.JSONResponse(w, http.StatusOK, comments)
+	// Set the items value in the pagination struct
+	pagination.Items = comments
+
+	// Send the response with the pagination struct
+	utils.JSONResponse(w, http.StatusOK, pagination)
 }
+
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /commentcontroller/{id} request
+
 }
 
 func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
