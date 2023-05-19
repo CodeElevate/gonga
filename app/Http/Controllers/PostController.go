@@ -4,6 +4,7 @@ import (
 	"errors"
 	requests "gonga/app/Http/Requests"
 	"gonga/app/Models"
+	services "gonga/app/Services"
 	cloudinary "gonga/packages/Cloudinary"
 	"gonga/utils"
 	"log"
@@ -197,17 +198,23 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 // Update Post Title
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
 	postID, err := utils.GetParam(r, "id")
+
 	if err != nil {
 		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
 		return
 	}
-	log.Println(postID)
+
 	// Parse update data from request body
-	var updateData struct {
-		Title string `json:"title"`
-	}
-	if err := utils.DecodeJSONBody(w, r, &updateData); err != nil {
+	var updateReq requests.UpdatePostTitleRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
 		var mr *utils.MalformedRequest
 		if errors.As(err, &mr) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
@@ -218,15 +225,107 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Validate post request
-	if err := utils.ValidateRequest(w, &updateData); err != nil {
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
 		return
 	}
 
 	// Perform update in the database for the specified post ID
-	// ...
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
 
+		return
+	}
+
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		return
+	}
+	// Update the post title
+	post.Title = updateReq.Title
+
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
 	// Return success response
-	w.WriteHeader(http.StatusOK)
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post title updated successfully!"})
+}
+
+// Update Post Body
+func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
+	// Parse post ID from request parameters
+	userID, err := utils.GetUserIDFromContext(r.Context())
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	postID, err := utils.GetParam(r, "id")
+
+	if err != nil {
+		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Parse update data from request body
+	var updateReq requests.UpdatePostBodyRequest
+	if err := utils.DecodeJSONBody(w, r, &updateReq); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		}
+		return
+	}
+	// Validate post request
+	if err := utils.ValidateRequest(w, &updateReq); err != nil {
+		return
+	}
+
+	// Perform update in the database for the specified post ID
+	var post Models.Post
+	result := c.DB.First(&post, postID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+		} else {
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		}
+
+		return
+	}
+
+	if post.UserID != uint(userID.(float64)) {
+		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		return
+	}
+	// Update the post title
+	post.Body = updateReq.Body
+
+	result = c.DB.Save(&post)
+	if result.Error != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		return
+	}
+	
+	// Perform the edit mentions operation
+	err = services.EditMentions(c.DB, post.ID, "posts", updateReq.Mentions)
+	if err != nil {
+		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+	// Return success response
+	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post body updated successfully!"})
 }
 
 func (c PostController) Delete(w http.ResponseWriter, r *http.Request) {
