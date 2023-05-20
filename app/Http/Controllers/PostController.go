@@ -15,6 +15,7 @@ import (
 type PostController struct {
 	DB *gorm.DB
 }
+
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
 	var pagination utils.Pagination
@@ -37,7 +38,6 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	// Send the response with the pagination struct
 	utils.JSONResponse(w, http.StatusOK, pagination)
 }
-
 
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
@@ -84,8 +84,8 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := utils.ValidateRequest(w, &createReq); err != nil {
 		return
 	}
-	userID, err := utils.GetUserIDFromContext(r.Context())
 
+	userID, err := utils.GetUserIDFromContext(r.Context())
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 		return
@@ -133,7 +133,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		// Save the mention to the database
 		if err := c.DB.Create(&mention).Error; err != nil {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 			return
 		}
 	}
