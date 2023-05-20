@@ -9,6 +9,6 @@ import (
 func LoadNestedComments(comment *Models.Comment, db *gorm.DB) {
 	db.Preload("User").Preload("Likes").Where("parent_id = ?", comment.ID).Find(&comment.Children)
 	for i := range comment.Children {
-		LoadNestedComments(&comment.Children[i], db)
+		LoadNestedComments(comment.Children[i], db)
 	}
 }
