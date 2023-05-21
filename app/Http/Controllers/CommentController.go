@@ -31,7 +31,7 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	var comments []Models.Comment
 	var pagination utils.Pagination
 
-	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User", "Childrens")
+	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User", "Childrens", "Likes")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return

@@ -18,11 +18,11 @@ const (
 type Post struct {
 	gorm.Model
 	UserID          uint       `json:"user_id"`
-	User            *User       `json:"user,omitempty"`
+	User            *User      `json:"user,omitempty"`
 	Title           string     `json:"title"`
 	Body            string     `json:"body"`
-	Likes           []Like     `json:"likes" gorm:"foreignKey:PostID"`
-	LikeCount       uint       `json:"likeCount"`
+	Likes           []Like     `json:"likes" gorm:"polymorphic:Likeable;"`
+	LikeCount       uint       `json:"like_count"`
 	Comments        []Comment  `json:"comments" gorm:"foreignKey:PostID"`
 	CommentCount    uint       `json:"comment_count"`
 	ViewCount       uint       `json:"view_count"`

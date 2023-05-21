@@ -53,6 +53,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 		Preload("Medias").
 		Preload("Mentions.User").
 		Preload("User").
+		Preload("Likes").
 		Preload("Hashtags", func(db *gorm.DB) *gorm.DB {
 			// Exclude the "User" field from being loaded for hashtags
 			return db.Omit("User")
