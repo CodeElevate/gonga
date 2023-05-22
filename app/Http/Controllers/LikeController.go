@@ -23,6 +23,15 @@ func (c LikeController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /likecontroller/{id} request
 }
 
+// Like increases the like count of a post.
+//	@Summary	Like a post
+//	@Tags		Posts
+//	@Produce	json
+//	@Param		id	path		int	true	"Post ID"
+//	@Success	200	{object}	map[string]string
+//	@Failure	404	{object}	map[string]string
+//	@Failure	500	{object}	map[string]string
+//	@Router		/posts/{id}/like [post]
 func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
@@ -85,6 +94,15 @@ func (c LikeController) Update(w http.ResponseWriter, r *http.Request) {
 	// You can send a response by writing to w
 }
 
+// Unlike decreases the like count of a post.
+//	@Summary	Unlike a post
+//	@Tags		Posts
+//	@Produce	json
+//	@Param		id	path		int	true	"Post ID"
+//	@Success	200	{object}	map[string]string
+//	@Failure	404	{object}	map[string]string
+//	@Failure	500	{object}	map[string]string
+//	@Router		/posts/{id}/unlike [post]
 func (c LikeController) Delete(w http.ResponseWriter, r *http.Request) {
 	likeID, err := utils.GetParam(r, "id") // Get the like ID from the URL parameter
 	if err != nil {
