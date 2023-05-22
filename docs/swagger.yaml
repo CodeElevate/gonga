@@ -78,7 +78,11 @@ definitions:
         type: integer
     type: object
 info:
-  contact: {}
+  contact:
+    name: API Support
+  description: A social media api.
+  title: Gonga Api
+  version: "1.0"
 paths:
   /posts:
     get:
