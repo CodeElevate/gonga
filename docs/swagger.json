@@ -1,7 +1,12 @@
 {
     "swagger": "2.0",
     "info": {
-        "contact": {}
+        "description": "A social media api.",
+        "title": "Gonga Api",
+        "contact": {
+            "name": "API Support"
+        },
+        "version": "1.0"
     },
     "paths": {
         "/posts": {
