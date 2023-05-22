@@ -53,15 +53,15 @@ type ErrorResponse struct {
 	Error string `json:"error"`
 }
 
-// @Summary Get user by ID
-// @Description Get user information by user ID
-// @ID get-user-by-id
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} UserResponse
-// @Failure 400 {object} ErrorResponse
-// @Failure 404 {object} ErrorResponse
-// @Router /users/{id} [get]
+//	@Summary		Get user by ID
+//	@Description	Get user information by user ID
+//	@ID				get-user-by-id
+//	@Produce		json
+//	@Param			id	path		int	true	"User ID"
+//	@Success		200	{object}	UserResponse
+//	@Failure		400	{object}	ErrorResponse
+//	@Failure		404	{object}	ErrorResponse
+//	@Router			/users/{id} [get]
 func (uc UserController) Show(w http.ResponseWriter, r *http.Request) {
 	username, err := utils.GetParam(r, "username")
 	if err != nil {

@@ -16,6 +16,15 @@ type PostController struct {
 	DB *gorm.DB
 }
 
+// Index returns a paginated list of posts.
+//	@Summary	Get a list of posts
+//	@Tags		Posts
+//	@Produce	json
+//	@Param		page		query		int	false	"Page number"
+//	@Param		per_page	query		int	false	"Number of items per page"
+//	@Success	200			{object}	utils.Pagination
+//	@Failure	500			{object}	map[string]string
+//	@Router		/posts [get]
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
 	var pagination utils.Pagination
@@ -39,6 +48,15 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, pagination)
 }
 
+// Show returns the details of a specific post.
+//	@Summary	Get a post by ID
+//	@Tags		Posts
+//	@Produce	json
+//	@Param		id	path		int	true	"Post ID"
+//	@Success	200	{object}	map[string]string
+//	@Failure	404	{object}	map[string]string
+//	@Failure	500	{object}	map[string]string
+//	@Router		/posts/{id} [get]
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postId, err := utils.GetParam(r, "id")
@@ -53,6 +71,7 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 		Preload("Medias").
 		Preload("Mentions.User").
 		Preload("User").
+		Preload("Likes").
 		Preload("Hashtags", func(db *gorm.DB) *gorm.DB {
 			// Exclude the "User" field from being loaded for hashtags
 			return db.Omit("User")
@@ -66,6 +85,16 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, post)
 }
 
+// Create creates a new post.
+//	@Summary	Create a new post
+//	@Tags		Posts
+//	@Accept		json
+//	@Produce	json
+//	@Param		post	body		requests.CreatePostRequest	true	"Post data"
+//	@Success	200		{object}	map[string]string
+//	@Failure	400		{object}	map[string]string
+//	@Failure	500		{object}	map[string]string
+//	@Router		/posts [post]
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse update request from request body
 	var createReq requests.CreatePostRequest
@@ -182,6 +211,18 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post created successfully!"})
 }
 
+// Update updates a post.
+//	@Summary	Update a post
+//	@Tags		Posts
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int							true	"Post ID"
+//	@Param		post	body		requests.UpdatePostRequest	true	"Post data"
+//	@Success	200		{object}	map[string]string
+//	@Failure	400		{object}	map[string]string
+//	@Failure	404		{object}	map[string]string
+//	@Failure	500		{object}	map[string]string
+//	@Router		/posts/{id} [put]
 func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 	// Handle PUT /postcontroller/{id} request
 	// You can get the request body by reading from r.Body
@@ -204,7 +245,18 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "this is still not implemented"})
 }
 
-// Update Post Title
+// UpdateTitle updates the title of a post.
+//	@Summary	Update the title of a post
+//	@Tags		Posts
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int								true	"Post ID"
+//	@Param		post	body		requests.UpdatePostTitleRequest	true	"Post title data"
+//	@Success	200		{object}	map[string]string
+//	@Failure	400		{object}	map[string]string
+//	@Failure	404		{object}	map[string]string
+//	@Failure	500		{object}	map[string]string
+//	@Router		/posts/{id}/title [put]
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -267,7 +319,18 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post title updated successfully!"})
 }
 
-// Update Post Body
+// UpdateBody updates the body of a post.
+//	@Summary	Update the body of a post
+//	@Tags		Posts
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int								true	"Post ID"
+//	@Param		post	body		requests.UpdatePostBodyRequest	true	"Post body data"
+//	@Success	200		{object}	map[string]string
+//	@Failure	400		{object}	map[string]string
+//	@Failure	404		{object}	map[string]string
+//	@Failure	500		{object}	map[string]string
+//	@Router		/posts/{id}/body [put]
 func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -337,6 +400,15 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post body updated successfully!"})
 }
 
+// Delete deletes a post.
+//	@Summary	Delete a post
+//	@Tags		Posts
+//	@Produce	json
+//	@Param		id	path		int	true	"Post ID"
+//	@Success	200	{object}	map[string]string
+//	@Failure	404	{object}	map[string]string
+//	@Failure	500	{object}	map[string]string
+//	@Router		/posts/{id} [delete]
 func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())

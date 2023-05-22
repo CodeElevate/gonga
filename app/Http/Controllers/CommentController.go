@@ -31,7 +31,7 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	var comments []Models.Comment
 	var pagination utils.Pagination
 
-	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User", "Childrens")
+	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User", "Childrens", "Likes")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -77,6 +77,18 @@ func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, comment)
 }
 
+// AddComment adds a comment to a post.
+//	@Summary	Add a comment to a post
+//	@Tags		Comments
+//	@Accept		json
+//	@Produce	json
+//	@Param		id		path		int								true	"Post ID"
+//	@Param		comment	body		requests.CreateCommentRequest	true	"Comment data"
+//	@Success	200		{object}	map[string]string
+//	@Failure	400		{object}	map[string]string
+//	@Failure	404		{object}	map[string]string
+//	@Failure	500		{object}	map[string]string
+//	@Router		/posts/{id}/comments [post]
 func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 	postIDStr, err := utils.GetParam(r, "id")
 	if err != nil {
@@ -159,6 +171,19 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// UpdateComment updates a comment on a post.
+//	@Summary	Update a comment on a post
+//	@Tags		Comments
+//	@Accept		json
+//	@Produce	json
+//	@Param		id			path		int								true	"Post ID"
+//	@Param		comment_id	path		int								true	"Comment ID"
+//	@Param		comment		body		requests.UpdateCommentRequest	true	"Comment data"
+//	@Success	200			{object}	map[string]string
+//	@Failure	400			{object}	map[string]string
+//	@Failure	404			{object}	map[string]string
+//	@Failure	500			{object}	map[string]string
+//	@Router		/posts/{id}/comments/{comment_id} [put]
 func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")
@@ -225,6 +250,16 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// DeleteComment deletes a comment from a post.
+//	@Summary	Delete a comment from a post
+//	@Tags		Comments
+//	@Produce	json
+//	@Param		id			path		int	true	"Post ID"
+//	@Param		comment_id	path		int	true	"Comment ID"
+//	@Success	200			{object}	map[string]string
+//	@Failure	404			{object}	map[string]string
+//	@Failure	500			{object}	map[string]string
+//	@Router		/posts/{id}/comments/{comment_id} [delete]
 func (c CommentController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")

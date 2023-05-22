@@ -11,7 +11,7 @@ type Comment struct {
 	PostID    uint       `json:"post_id"`
 	Post      *Post      `json:"post,omitempty" gorm:"foreignKey:PostID;"`
 	Body      string     `json:"body"`
-	Likes     []Like     `json:"likes" gorm:"foreignKey:CommentID"`
+	Likes     []Like     `json:"likes" gorm:"polymorphic:Likeable;"`
 	ParentID  *uint      `json:"parent_id"`
 	Parent    *Comment   `json:"parent,omitempty"`
 	Childrens []*Comment `json:"childrens,omitempty" gorm:"foreignKey:ParentID"`

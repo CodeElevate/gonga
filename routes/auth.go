@@ -8,12 +8,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// @title Gonga Api
-// @description A social media api.
-// @version 1.0
-// @contact.name API Support
-// @host localhost:8000
-// @BasePath /
+//	@title			Gonga Api
+//	@description	A social media api.
+//	@version		1.0
+//	@contact.name	API Support
+//	@host			localhost:8000
+//	@BasePath		/
 func RegisterAuthRoutes(router *packages.MyRouter, db *gorm.DB) {
 
 	LoginController := auth.LoginController{DB: db}
