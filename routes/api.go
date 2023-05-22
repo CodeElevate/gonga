@@ -8,14 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-//	@title			Gonga Api
-//	@description	A social media api.
-//	@version		1.0
-//	@contact.name	API Support
-//	@host			localhost:8000
-//	@BasePath		/
+// RegisterApiRoutes registers the API routes
 func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
-
+	// Initialize the required controllers
 	UserController := controllers.UserController{DB: db}
 	SearchController := controllers.SearchController{DB: db}
 	PostController := controllers.PostController{DB: db}
@@ -57,7 +52,7 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 
 	// Follow API endpoint handlers
 	router.Post("/users/follow", FollowController.Create, middlewares.AuthMiddleware)
-     
+
 	// Notification API endpoint handlers
 	router.Get("/notifications", NotificationController.Index, middlewares.AuthMiddleware)
 	router.Post("/notifications/read_all", NotificationController.ReadAll, middlewares.AuthMiddleware)

@@ -8,18 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
-//	@title			Gonga Api
-//	@description	A social media api.
-//	@version		1.0
-//	@contact.name	API Support
-//	@host			localhost:8000
-//	@BasePath		/
+// RegisterAuthRoutes registers the authentication-related routes
 func RegisterAuthRoutes(router *packages.MyRouter, db *gorm.DB) {
-
+	// Initialize the required controllers
 	LoginController := auth.LoginController{DB: db}
 	RegisterController := auth.RegisterController{DB: db}
 	NewPasswordController := auth.NewPasswordController{DB: db}
-	PasswordResetLinkController:=auth.PasswordResetLinkController{DB: db}
+	PasswordResetLinkController := auth.PasswordResetLinkController{DB: db}
 
 	// Login API endpoint handlers
 	router.Post("/login", LoginController.Create)
@@ -33,5 +28,5 @@ func RegisterAuthRoutes(router *packages.MyRouter, db *gorm.DB) {
 	// Password reset API endpoint handlers
 	router.Post("/forgot-password", PasswordResetLinkController.Create).Name("password.email")
 	router.Post("/reset-password", NewPasswordController.Create).Name("password.update")
-	
+
 }
