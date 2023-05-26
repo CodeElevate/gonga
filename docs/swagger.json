@@ -1,13 +1,17 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "A social media api.",
-        "title": "Gonga Api",
+        "description": "This is the Swagger documentation for the Gonga API.",
+        "title": "Gonga API Documentation",
         "contact": {
-            "name": "API Support"
+            "name": "Your Name",
+            "url": "http://your-website.com",
+            "email": "your.email@example.com"
         },
         "version": "1.0"
     },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
     "paths": {
         "/posts": {
             "get": {

@@ -1,3 +1,4 @@
+basePath: /api/v1
 definitions:
   Models.Mention:
     type: object
@@ -77,11 +78,14 @@ definitions:
       total_records:
         type: integer
     type: object
+host: localhost:8080
 info:
   contact:
-    name: API Support
-  description: A social media api.
-  title: Gonga Api
+    email: your.email@example.com
+    name: Your Name
+    url: http://your-website.com
+  description: This is the Swagger documentation for the Gonga API.
+  title: Gonga API Documentation
   version: "1.0"
 paths:
   /posts:
