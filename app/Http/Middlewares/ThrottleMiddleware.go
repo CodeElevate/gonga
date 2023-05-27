@@ -9,7 +9,7 @@ func ThrottleMiddleware(next http.Handler) http.Handler {
 	limiter := rate.NewLimiter(1, 1)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !limiter.Allow() {
-			http.Error(w, "Too many requests", http.StatusTooManyRequests)
+			http.Error(w, "The request cannot be served due to the rate limit having been exhausted for the resource", http.StatusTooManyRequests)
 			return
 		}
 		next.ServeHTTP(w, r)

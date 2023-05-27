@@ -47,7 +47,7 @@ func (p *Pagination) GetSort() string {
 // It returns a PaginatedResult struct containing the paginated items, as well as metadata such as the total number of records, total number of pages, and the number of remaining items.
 // The out parameter should be a pointer to a slice that will hold the paginated items.
 // If any errors occur during pagination, an error is returned.
-func Paginate(r *http.Request, db *gorm.DB, out interface{}, pagination *Pagination, associations ...string) (func(db *gorm.DB) *gorm.DB, error) {
+func Paginate(r *http.Request, db *gorm.DB, out interface{}, response *APIResponse, associations ...string) (func(db *gorm.DB) *gorm.DB, error) {
 	page, perPage := GetPaginationParams(r, 1, 10)
 
 	// calculate the offset based on the current page and number of items per page
@@ -70,13 +70,21 @@ func Paginate(r *http.Request, db *gorm.DB, out interface{}, pagination *Paginat
 	}
 
 	// Update the pagination struct with the values
-	pagination.Page = page
-	pagination.PerPage = perPage
-	pagination.Sort = pagination.GetSort()
-	pagination.TotalRecords = int(count)
-	pagination.TotalPages = totalPages
-	pagination.Remaining = remaining
-
+	// pagination.Page = page
+	// pagination.PerPage = perPage
+	// pagination.Sort = pagination.GetSort()
+	// pagination.TotalRecords = int(count)
+	// pagination.TotalPages = totalPages
+	// pagination.Remaining = remaining
+	// Update the pagination struct with the values
+	response.Meta = map[string]interface{}{
+		"page":          page,
+		"per_page":      perPage,
+		"sort":          "created_at asc",
+		"total_records": count,
+		"total_pages":   totalPages,
+		"remaining":     remaining,
+	}
 	scopeFunc := func(db *gorm.DB) *gorm.DB {
 		// preload specified relationships
 		for _, association := range associations {
@@ -84,7 +92,7 @@ func Paginate(r *http.Request, db *gorm.DB, out interface{}, pagination *Paginat
 		}
 
 		// Apply pagination scopes
-		return db.Offset(offset).Limit(perPage).Order(pagination.GetSort())
+		return db.Offset(offset).Limit(perPage).Order(response.Meta["sort"])
 	}
 
 	return scopeFunc, nil

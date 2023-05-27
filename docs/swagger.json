@@ -15,41 +15,31 @@
     "paths": {
         "/posts": {
             "get": {
+                "description": "Retrieves a list of all posts from the server.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Get a list of posts",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "per_page",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get all posts",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.Pagination"
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     },
-                    "500": {
-                        "description": "Internal Server Error",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     }
                 }
@@ -844,27 +834,54 @@
                 }
             }
         },
-        "utils.Pagination": {
+        "utils.APIError": {
             "type": "object",
             "properties": {
-                "items": {},
-                "page": {
-                    "type": "integer"
+                "code": {
+                    "type": "integer",
+                    "example": 400
                 },
-                "per_page": {
-                    "type": "integer"
+                "critical": {
+                    "type": "boolean",
+                    "example": true
                 },
-                "remaining": {
-                    "type": "integer"
+                "details": {
+                    "type": "object",
+                    "additionalProperties": true
                 },
-                "sort": {
+                "field": {
+                    "type": "string",
+                    "example": "username"
+                },
+                "message": {
+                    "type": "string",
+                    "example": "Bad Request"
+                },
+                "suggestion": {
+                    "type": "string",
+                    "example": "Try again later."
+                }
+            }
+        },
+        "utils.APIResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/utils.APIError"
+                    }
+                },
+                "message": {
                     "type": "string"
                 },
-                "total_pages": {
-                    "type": "integer"
+                "meta": {
+                    "type": "object",
+                    "additionalProperties": true
                 },
-                "total_records": {
-                    "type": "integer"
+                "type": {
+                    "type": "string"
                 }
             }
         }

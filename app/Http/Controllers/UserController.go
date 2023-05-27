@@ -16,9 +16,9 @@ type UserController struct {
 
 func (uc UserController) Index(w http.ResponseWriter, r *http.Request) {
 	var users []Models.User
-	var pagination utils.Pagination
+	var response utils.APIResponse
 
-	paginationScope, err := utils.Paginate(r, uc.DB, &users, &pagination)
+	paginationScope, err := utils.Paginate(r, uc.DB, &users, &response)
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -31,10 +31,13 @@ func (uc UserController) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Set the items value in the pagination struct
-	pagination.Items = users
+	response.Data = users
+	response.Type = "success"
+    response.Message = "data retrieved successfully"
 
 	// Send the response with the pagination struct
-	utils.JSONResponse(w, http.StatusOK, pagination)
+	utils.JSONResponse(w, http.StatusOK, response)
+
 }
 
 // swagger:response UserResponse
@@ -76,7 +79,10 @@ func (uc UserController) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Return successful response with the user data
-	utils.JSONResponse(w, http.StatusOK, user)
+	utils.JSONResponse(w, http.StatusOK,  utils.APIResponse{
+		Type: "success",
+        Data: user,
+    })
 }
 
 func (uc UserController) Create(w http.ResponseWriter, r *http.Request) {
