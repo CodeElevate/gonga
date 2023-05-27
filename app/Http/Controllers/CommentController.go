@@ -29,9 +29,9 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 
 	// Handle GET /commentcontroller request
 	var comments []Models.Comment
-	var pagination utils.Pagination
+	var response utils.APIResponse
 
-	paginationScope, err := utils.Paginate(r, c.DB, &comments, &pagination, "User", "Mentions.User", "Childrens", "Likes")
+	paginationScope, err := utils.Paginate(r, c.DB, &comments, &response, "User", "Mentions.User", "Childrens", "Likes")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
@@ -44,10 +44,14 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Set the items value in the pagination struct
-	pagination.Items = comments
+	// pagination.Items = comments
+	response.Data = comments
+	response.Type = "success"
+	response.Message = "Data fetched successfully!"
 
 	// Send the response with the pagination struct
-	utils.JSONResponse(w, http.StatusOK, pagination)
+	utils.JSONResponse(w, http.StatusOK, response)
+
 }
 
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
@@ -74,7 +78,10 @@ func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send the comment as a response
-	utils.JSONResponse(w, http.StatusOK, comment)
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Data: comment,
+		Type: "success",
+	})
 }
 
 // AddComment adds a comment to a post.
@@ -172,6 +179,7 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateComment updates a comment on a post.
+//
 //	@Summary	Update a comment on a post
 //	@Tags		Comments
 //	@Accept		json
@@ -251,6 +259,7 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteComment deletes a comment from a post.
+//
 //	@Summary	Delete a comment from a post
 //	@Tags		Comments
 //	@Produce	json

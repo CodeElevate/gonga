@@ -62,21 +62,41 @@ definitions:
     required:
     - title
     type: object
-  utils.Pagination:
+  utils.APIError:
     properties:
-      items: {}
-      page:
+      code:
+        example: 400
         type: integer
-      per_page:
-        type: integer
-      remaining:
-        type: integer
-      sort:
+      critical:
+        example: true
+        type: boolean
+      details:
+        additionalProperties: true
+        type: object
+      field:
+        example: username
         type: string
-      total_pages:
-        type: integer
-      total_records:
-        type: integer
+      message:
+        example: Bad Request
+        type: string
+      suggestion:
+        example: Try again later.
+        type: string
+    type: object
+  utils.APIResponse:
+    properties:
+      data: {}
+      errors:
+        items:
+          $ref: '#/definitions/utils.APIError'
+        type: array
+      message:
+        type: string
+      meta:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
     type: object
 host: localhost:8080
 info:
@@ -90,29 +110,23 @@ info:
 paths:
   /posts:
     get:
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: per_page
-        type: integer
+      description: Retrieves a list of all posts from the server.
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.Pagination'
-        "500":
-          description: Internal Server Error
+            $ref: '#/definitions/utils.APIResponse'
+        "400":
+          description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a list of posts
+            $ref: '#/definitions/utils.APIResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      summary: Get all posts
       tags:
       - Posts
     post:

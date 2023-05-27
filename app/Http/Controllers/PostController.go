@@ -16,52 +16,58 @@ type PostController struct {
 	DB *gorm.DB
 }
 
-// Index returns a paginated list of posts.
-//	@Summary	Get a list of posts
-//	@Tags		Posts
-//	@Produce	json
-//	@Param		page		query		int	false	"Page number"
-//	@Param		per_page	query		int	false	"Number of items per page"
-//	@Success	200			{object}	utils.Pagination
-//	@Failure	500			{object}	map[string]string
-//	@Router		/posts [get]
+//	@Summary		Get all posts
+//	@Description	Retrieves a list of all posts from the server.
+//
+// This endpoint allows you to fetch all the posts available in the system. The returned list includes details such as post ID, title, content, author, and creation date.
+//
+// The API response is in JSON format.
+//
+//	@Tags			Posts
+//	@Produce		json
+//	@Success		200	{object}	utils.APIResponse
+//	@Failure		400	{object}	utils.APIResponse
+//	@Failure		401	{object}	utils.APIResponse
+//	@Router			/posts [get]
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
-	var pagination utils.Pagination
+	var response utils.APIResponse
 
-	paginationScope, err := utils.Paginate(r, c.DB, &posts, &pagination, "User", "Medias", "Mentions.User", "Hashtags")
+	paginationScope, err := utils.Paginate(r, c.DB, &posts, &response, "User", "Medias", "Mentions.User", "Hashtag")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		utils.HandleError(w, err, http.StatusInternalServerError, "Failed to paginate posts")
 		return
 	}
 
 	db := paginationScope(c.DB)
 	if err := db.Find(&posts).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		utils.HandleError(w, err, http.StatusInternalServerError, "Failed to retrieve posts")
 		return
 	}
 
-	// Set the items value in the pagination struct
-	pagination.Items = posts
+	response.Data = posts
+	response.Type = "success"
+	response.Message = "data retrieved successfully"
 
-	// Send the response with the pagination struct
-	utils.JSONResponse(w, http.StatusOK, pagination)
+	utils.JSONResponse(w, http.StatusOK, response)
 }
 
 // Show returns the details of a specific post.
+//
 //	@Summary	Get a post by ID
 //	@Tags		Posts
 //	@Produce	json
 //	@Param		id	path		int	true	"Post ID"
-//	@Success	200	{object}	map[string]string
-//	@Failure	404	{object}	map[string]string
-//	@Failure	500	{object}	map[string]string
+//	@Success	200	{object}	utils.APIResponse
+//	@Failure	404	{object}	utils.APIResponse
+//	@Failure	500	{object}	utils.APIResponse
 //	@Router		/posts/{id} [get]
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postId, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		log.Println(err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -78,22 +84,27 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 		}).
 		First(&post).Error; err != nil {
 		// User not found, return error response
-		utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusNotFound)
 		return
 	}
-	// Return successful response with the user data
-	utils.JSONResponse(w, http.StatusOK, post)
+	// Return successful response with the post data
+	response := utils.APIResponse{
+		Type: "success",
+		Data: post,
+	}
+	utils.JSONResponse(w, http.StatusOK, response)
 }
 
 // Create creates a new post.
+//
 //	@Summary	Create a new post
 //	@Tags		Posts
 //	@Accept		json
 //	@Produce	json
 //	@Param		post	body		requests.CreatePostRequest	true	"Post data"
-//	@Success	200		{object}	map[string]string
-//	@Failure	400		{object}	map[string]string
-//	@Failure	500		{object}	map[string]string
+//	@Success	200		{object}	utils.APIResponse
+//	@Failure	400		{object}	utils.APIResponse
+//	@Failure	500		{object}	utils.APIResponse
 //	@Router		/posts [post]
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse update request from request body
@@ -102,10 +113,10 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := utils.DecodeJSONBody(w, r, &createReq); err != nil {
 		var mr *utils.MalformedRequest
 		if errors.As(err, &mr) {
-			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+			utils.HandleError(w, err, mr.Status())
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, errors.New("failed to decode JSON body"), http.StatusInternalServerError)
 		}
 		return
 	}
@@ -116,7 +127,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := utils.GetUserIDFromContext(r.Context())
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	newPost := Models.Post{
@@ -133,7 +144,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	result := c.DB.Create(&newPost)
 
 	if result.Error != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		utils.HandleError(w, result.Error, http.StatusInternalServerError, "failed to create post in the database")
 		return
 	}
 
@@ -144,7 +155,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		// Fetch the media record from the database
 		var media Models.Media
 		if err := c.DB.First(&media, mediaID).Error; err != nil {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to associate media with the post"})
+			utils.HandleError(w, errors.New("failed to associate media with the post"), http.StatusInternalServerError)
 			return
 		}
 		// Update the owner ID of the media to the ID of the newly created post
@@ -162,7 +173,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		// Save the mention to the database
 		if err := c.DB.Create(&mention).Error; err != nil {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 			return
 		}
 	}
@@ -184,11 +195,11 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 					// Set other tag fields as needed
 				}
 				if err := c.DB.Create(&tag).Error; err != nil {
-					utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+					utils.HandleError(w, err, http.StatusInternalServerError)
 					return
 				}
 			} else {
-				utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+				utils.HandleError(w, err, http.StatusInternalServerError)
 				return
 			}
 		}
@@ -199,7 +210,7 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Associate the tags with the post
 	if err := c.DB.Model(&newPost).Association("Hashtags").Replace(tags); err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -208,10 +219,14 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// 	utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
 	// 	return
 	// }
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post created successfully!"})
+	utils.JSONResponse(w, http.StatusCreated, &utils.APIResponse{
+		Type:    "success",
+		Message: "The post was created successfully",
+	})
 }
 
 // Update updates a post.
+//
 //	@Summary	Update a post
 //	@Tags		Posts
 //	@Accept		json
@@ -246,30 +261,31 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateTitle updates the title of a post.
+//
 //	@Summary	Update the title of a post
 //	@Tags		Posts
 //	@Accept		json
 //	@Produce	json
 //	@Param		id		path		int								true	"Post ID"
 //	@Param		post	body		requests.UpdatePostTitleRequest	true	"Post title data"
-//	@Success	200		{object}	map[string]string
-//	@Failure	400		{object}	map[string]string
-//	@Failure	404		{object}	map[string]string
-//	@Failure	500		{object}	map[string]string
+//	@Success	200		{object}	utils.APIResponse
+//	@Failure	400		{object}	utils.APIResponse
+//	@Failure	404		{object}	utils.APIResponse
+//	@Failure	500		{object}	utils.APIResponse
 //	@Router		/posts/{id}/title [put]
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	postID, err := utils.GetParam(r, "id")
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -281,7 +297,7 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -295,16 +311,16 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	result := c.DB.First(&post, postID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, errors.New("post not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		}
 
 		return
 	}
 
 	if post.UserID != uint(userID.(float64)) {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		utils.HandleError(w, errors.New("you are not authorized to update post"), http.StatusUnauthorized)
 		return
 	}
 	// Update the post title
@@ -312,14 +328,20 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 
 	result = c.DB.Save(&post)
 	if result.Error != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		return
 	}
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post title updated successfully!"})
+	utils.JSONResponse(w, http.StatusOK,
+		&utils.APIResponse{
+			Type:    "success",
+			Message: "the post title was updated successfully",
+			Data:    post,
+		})
 }
 
 // UpdateBody updates the body of a post.
+//
 //	@Summary	Update the body of a post
 //	@Tags		Posts
 //	@Accept		json
@@ -336,14 +358,14 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	postID, err := utils.GetParam(r, "id")
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -355,7 +377,7 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -369,16 +391,16 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 	result := c.DB.First(&post, postID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, errors.New("post not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		}
 
 		return
 	}
 
 	if post.UserID != uint(userID.(float64)) {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		utils.HandleError(w, errors.New("you are not authorized to update post"), http.StatusUnauthorized)
 		return
 	}
 	// Update the post title
@@ -386,21 +408,27 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 
 	result = c.DB.Save(&post)
 	if result.Error != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		return
 	}
 
 	// Perform the edit mentions operation
 	err = services.EditMentions(c.DB, post.ID, "posts", updateReq.Mentions)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post body updated successfully!"})
+	utils.JSONResponse(w, http.StatusOK,
+		&utils.APIResponse{
+			Type:    "success",
+			Message: "the post body was updated successfully",
+			Data:    post,
+		})
 }
 
 // Delete deletes a post.
+//
 //	@Summary	Delete a post
 //	@Tags		Posts
 //	@Produce	json
@@ -414,14 +442,14 @@ func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	postID, err := utils.GetParam(r, "id")
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -433,7 +461,7 @@ func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -447,27 +475,30 @@ func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	result := c.DB.First(&post, postID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, errors.New("post not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		}
 
 		return
 	}
 
 	if post.UserID != uint(userID.(float64)) {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to update post."})
+		utils.HandleError(w, errors.New("you are not authorized to upate post"), http.StatusUnauthorized)
 		return
 	}
 
 	// Perform the edit mentions operation
 	err = services.EditMedia(c.DB, post.ID, "posts", updateReq.Medias)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
+		Message: "post medias was updated successfully",
+	})
 }
 
 func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
@@ -475,14 +506,14 @@ func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	postID, err := utils.GetParam(r, "id")
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -494,7 +525,7 @@ func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -507,23 +538,26 @@ func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 	err = services.EditTags(c.DB, postID, updateReq.Hashtags, uint(userID.(float64)))
 	if err != nil {
 		if err.Error() == "post not found" {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, err, http.StatusNotFound)
 		} else {
 			log.Println(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update post tags"})
+			utils.HandleError(w, errors.New("failed to update post tags"), http.StatusInternalServerError)
 		}
 		return
 	}
 
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Post medias updated successfully!"})
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
+		Message: "post medias was updated successfully",
+	})
 }
 
 func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	postID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, err.Error())
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -535,7 +569,7 @@ func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Reque
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -549,9 +583,9 @@ func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Reque
 	result := c.DB.First(&post, postID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, errors.New("post not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -568,26 +602,30 @@ func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Reque
 	// Save the updated post in the database
 	result = c.DB.Save(&post)
 	if result.Error != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		return
 	}
 
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post settings updated successfully!"})
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
+		Message: "post settings was updated successfully",
+		Data:    post,
+	})
 }
 
 func (c *PostController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	postID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	// Get the authenticated user ID from the context
 	userID, err := utils.GetUserIDFromContext(r.Context())
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -596,24 +634,27 @@ func (c *PostController) Delete(w http.ResponseWriter, r *http.Request) {
 	result := c.DB.First(&post, postID)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Post not found"})
+			utils.HandleError(w, errors.New("post not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+			utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		}
 		return
 	}
 
 	// Check if the authenticated user is the owner of the post
 	if post.UserID != uint(userID.(float64)) {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "You are not authorized to delete this post"})
+		utils.HandleError(w, errors.New("you are not authorized to delete this post"), http.StatusUnauthorized)
 		return
 	}
 
 	// Delete the post from the database
 	if err := c.DB.Delete(&post).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Post deleted successfully"})
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
+		Message: "post was deleted successfully",
+	})
 }
