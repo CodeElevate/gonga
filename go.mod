@@ -52,6 +52,7 @@ require (
 )
 
 require (
+	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/cloudinary/cloudinary-go/v2 v2.2.0
 	github.com/go-playground/validator/v10 v10.12.0
 	github.com/golang-jwt/jwt/v5 v5.0.0-rc.2

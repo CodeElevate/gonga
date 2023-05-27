@@ -25,9 +25,9 @@ type PostController struct {
 //
 //	@Tags			Posts
 //	@Produce		json
-//	@Success		200	{object}	utils.APIResponse
-//	@Failure		400	{object}	utils.APIResponse
-//	@Failure		401	{object}	utils.APIResponse
+//	@Success		200	{object}	utils.SwaggerPagination
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
 //	@Router			/posts [get]
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
@@ -58,9 +58,9 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 //	@Tags		Posts
 //	@Produce	json
 //	@Param		id	path		int	true	"Post ID"
-//	@Success	200	{object}	utils.APIResponse
-//	@Failure	404	{object}	utils.APIResponse
-//	@Failure	500	{object}	utils.APIResponse
+//	@Success	200	{object}	utils.SwaggerSuccessResponse
+//	@Failure	404	{object}	utils.SwaggerErrorResponse
+//	@Failure	500	{object}	utils.SwaggerErrorResponse
 //	@Router		/posts/{id} [get]
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
@@ -102,9 +102,9 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 //	@Accept		json
 //	@Produce	json
 //	@Param		post	body		requests.CreatePostRequest	true	"Post data"
-//	@Success	200		{object}	utils.APIResponse
-//	@Failure	400		{object}	utils.APIResponse
-//	@Failure	500		{object}	utils.APIResponse
+//	@Success	200		{object}	utils.SwaggerSuccessResponse
+//	@Failure	400		{object}	utils.SwaggerErrorResponse
+//	@Failure	500		{object}	utils.SwaggerErrorResponse
 //	@Router		/posts [post]
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse update request from request body
