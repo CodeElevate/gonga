@@ -29,6 +29,7 @@ type User struct {
 	WebsiteURL         string     `json:"website_url"`
 	Occupation         string     `json:"occupation"`
 	Education          string     `json:"education"`
+	EmailVerified      bool       `json:"email_verified"`
 	// Interests          []string  `json:"interests"`
 }
 

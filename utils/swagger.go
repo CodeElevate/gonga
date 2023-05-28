@@ -1,8 +1,5 @@
 package utils
 
-
-
-
 // type APIResponse struct {
 // 	Type    string                 `json:"type,omitempty"`
 // 	Message string                 `json:"message,omitempty"`
@@ -12,14 +9,14 @@ package utils
 // }
 
 // type APIError struct {
-// 	Code       int                    `json:"code,omitempty"`
-// 	Message    string                 `json:"message,omitempty"`
-// 	Field      string                 `json:"field,omitempty"`
+// 	Code       int                    `json:"code,omitempty" example:"400"`
+// 	Message    string                 `json:"message,omitempty" example:"Bad Request"`
+// 	Field      string                 `json:"field,omitempty" example:"username"`
 // 	Details    map[string]interface{} `json:"details,omitempty"`
-// 	Critical   bool                   `json:"critical,omitempty"`
-// 	Suggestion string                 `json:"suggestion,omitempty"`
+// 	Critical   bool                   `json:"critical,omitempty" example:"true"`
+// 	Suggestion string                 `json:"suggestion,omitempty" example:"Try again later."`
 // }
-type SwaggerPagination struct{
+type SwaggerPagination struct {
 	Type    string                 `json:"type,omitempty"`
 	Message string                 `json:"message,omitempty"`
 	Meta    map[string]interface{} `json:"meta,omitempty"`
@@ -27,6 +24,13 @@ type SwaggerPagination struct{
 }
 
 type SwaggerSuccessResponse struct {
-	Type string                 `json:"type,omitempty"`
-	Meta map[string]interface{} `json:"meta,omitempty"`
+	Type    string      `json:"type,omitempty"`
+	Message string      `json:"message,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
+}
+
+type SwaggerErrorResponse struct {
+	Type    string                 `json:"type,omitempty"`
+	Message string                 `json:"message,omitempty"`
+	Errors  []APIError             `json:"errors,omitempty"`
 }
