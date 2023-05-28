@@ -2,10 +2,9 @@ package seeder
 
 import (
 	"fmt"
-	factory "gonga/database/Factories"
-	"log"
-
+	"gonga/database/Factories"
 	"gorm.io/gorm"
+	"log"
 )
 
 type UserSeeder struct {
@@ -18,7 +17,7 @@ func (s *UserSeeder) Run() {
 
 	// Create and save dummy user records using the factory
 	for i := 0; i < 10; i++ {
-		user := factory.GenerateUser()
+		user := factory.UserFactory()
 		if err := db.Create(&user).Error; err != nil {
 			log.Fatalf("Error seeding user: %v", err)
 		}

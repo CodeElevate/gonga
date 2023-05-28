@@ -5,23 +5,29 @@ package factory
 import (
 	"gonga/app/Models"
 
-	"github.com/bxcodec/faker/v3"
+	"github.com/go-faker/faker/v4"
 )
 
 // GenerateUser generates a fake user instance
-func GenerateUser() Models.User {
+func UserFactory() Models.User {
 	user := Models.User{
-		FirstName:     faker.FirstName(),
-		LastName:      faker.LastName(),
-		Email:         faker.Email(),
-		Gender:        faker.Gender(),
-		Username:      faker.Username(),
-		Bio:           faker.Paragraph(),
-		AvatarURL:     faker.URL(),
-		WebsiteURL:    faker.URL(),
-		MobileNo:      faker.Phonenumber(),
+		Username:     faker.Username(),
+		Email:        faker.Email(),
+		Password:     faker.Password(),
+		FirstName:    faker.FirstName(),
+		LastName:     faker.LastName(),
+		AvatarURL:    faker.URL(),
+		Bio:          faker.Sentence(),
+		Gender:       faker.Gender(),
+		MobileNo:     faker.Phonenumber(),
+		MobileNoCode: "+1",
+		// Birthday:    faker.DateTime.Date(),
+		// Country:     faker,
+		// City:        faker.City(),
+		WebsiteURL: faker.URL(),
+		// Occupation:  faker.JobTitle(),
+		Education:     faker.Word(),
 		EmailVerified: true,
-		Password:      faker.Password(), // You can set a default password here
 	}
 
 	return user

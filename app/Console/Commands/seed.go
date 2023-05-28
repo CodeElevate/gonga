@@ -18,13 +18,11 @@ func SeedCmd(app *bootstrap.Application) *cobra.Command {
 			db := app.DB
 
 			// Create an instance of each seeder
-			userSeeder := &seeder.UserSeeder{DB: db}
+			seeder := &seeder.DatabaseSeeder{DB: db}
 
 			// Run the seeders
-			userSeeder.Run()
-
-			// Add more seeders as needed
-
+			seeder.Run()
+			
 			// Print completion message
 			fmt.Println("Database seeding completed.")
 		},
