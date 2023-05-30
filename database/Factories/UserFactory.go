@@ -4,33 +4,30 @@ package factory
 
 import (
 	"gonga/app/Models"
-	imaginary "gonga/packages/Imaginary"
-	"time"
 
-	"github.com/jaswdr/faker"
+	faker "github.com/brianvoe/gofakeit/v6"
 )
 
 // GenerateUser generates a fake user instance
 func UserFactory() Models.User {
-	faker := faker.New()
-
+	birthday := faker.Date()
 	user := Models.User{
-		// Username:      faker.Username(),
-		Email:         faker.Internet().SafeEmail(),
-		Password:      faker.Internet().Password(),
-		FirstName:     faker.Person().FirstName(),
-		LastName:      faker.Person().LastName(),
-		AvatarURL:     imaginary.GenerateImage(400, 400).URL,
-		Bio:           faker.Lorem().Sentence(400),
-		Gender:        faker.Person().Gender(),
-		MobileNo:      faker.Phone().Number(),
-		MobileNoCode:  faker.Address().CountryCode(),
-		Birthday:      &time.Time{},
-		Country:       faker.Address().Country(),
-		City:          faker.Address().City(),
-		WebsiteURL:    faker.Internet().URL(),
-		Occupation:    faker.Company().JobTitle(),
-		Education:     faker.Person().Title(),
+		Username:      faker.Username(),
+		Email:         faker.Email(),
+		Password:      faker.Password(true, true, true, true, false, 12),
+		FirstName:     faker.FirstName(),
+		LastName:      faker.LastName(),
+		AvatarURL:     faker.Person().Image,
+		Bio:           faker.Paragraph(2, 20, 20, "."),
+		Gender:        faker.Gender(),
+		MobileNo:      faker.Phone(),
+		MobileNoCode:  "+91",
+		Birthday:      &birthday,
+		Country:       faker.Country(),
+		City:          faker.City(),
+		WebsiteURL:    faker.URL(),
+		Occupation:    faker.JobTitle(),
+		Education:     faker.BS(),
 		EmailVerified: true,
 	}
 

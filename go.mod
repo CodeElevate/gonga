@@ -52,6 +52,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit/v6 v6.21.0
 	github.com/bxcodec/faker/v3 v3.8.1
 	github.com/bxcodec/faker/v4 v4.0.0-beta.3
 	github.com/cloudinary/cloudinary-go/v2 v2.2.0

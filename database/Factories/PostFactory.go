@@ -4,16 +4,15 @@ import (
 	"gonga/app/Models"
 	"time"
 
-	"github.com/jaswdr/faker"
+	faker "github.com/brianvoe/gofakeit/v6"
 )
 
 // PostFactory generates a fake post instance
 func PostFactory() Models.Post {
-	faker := faker.New()
 
 	post := Models.Post{
-		Title:           faker.Lorem().Sentence(30),
-		Body:            faker.Lorem().Paragraph(4),
+		Title:           faker.Sentence(30),
+		Body:            faker.Paragraph(4, 20, 20, "."),
 		UserID:          0, // Set the appropriate user ID here
 		LikeCount:       0,
 		CommentCount:    0,
