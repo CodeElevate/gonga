@@ -4,19 +4,18 @@ import (
 	"gonga/app/Models"
 	imaginary "gonga/packages/Imaginary"
 
-	"github.com/jaswdr/faker"
+	faker "github.com/brianvoe/gofakeit/v6"
 )
 
 // TagFactory generates a fake tag instance
 func TagFactory() Models.Tag {
-	faker := faker.New()
 	tag := Models.Tag{
-		// Title:        faker.Username(),
-		CoverImage:   imaginary.GenerateImage(400, 400).URL,
-		BackendImage: imaginary.GenerateImage(800, 600).URL,
-		Description:  faker.Lorem().Paragraph(10),
-		Color:        faker.Color().Hex(),
-		Slug:         faker.Internet().Slug(),
+		Title:        imaginary.NewTagGenerator().UniqueTag(),
+		CoverImage:   faker.ImageURL(300, 400),
+		BackendImage: faker.ImageURL(800, 600),
+		Description:  faker.Paragraph(1, 5, 15, "."),
+		Color:        faker.HexColor(),
+		Slug:         faker.Sentence(10),
 		UserID:       0, // Set the appropriate user ID here
 	}
 
