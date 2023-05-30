@@ -4,6 +4,7 @@ package factory
 
 import (
 	"gonga/app/Models"
+	imaginary "gonga/packages/Imaginary"
 	"time"
 
 	"github.com/jaswdr/faker"
@@ -14,12 +15,12 @@ func UserFactory() Models.User {
 	faker := faker.New()
 
 	user := Models.User{
-		Username:      faker.Username(),
+		// Username:      faker.Username(),
 		Email:         faker.Internet().SafeEmail(),
 		Password:      faker.Internet().Password(),
 		FirstName:     faker.Person().FirstName(),
 		LastName:      faker.Person().LastName(),
-		AvatarURL:     faker.URL(),
+		AvatarURL:     imaginary.GenerateImage(400, 400).URL,
 		Bio:           faker.Lorem().Sentence(400),
 		Gender:        faker.Person().Gender(),
 		MobileNo:      faker.Phone().Number(),
