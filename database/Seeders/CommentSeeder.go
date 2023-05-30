@@ -30,13 +30,16 @@ func (s *CommentSeeder) Run() {
 	}
 
 	// Create and save dummy comment records using the factory
-	for i := 0; i < 400; i++ {
+	for i := 0; i < 400000; i++ {
 		comment := factory.CommentFactory()
 		comment.User = &users[i%len(users)]
 		comment.Post = &posts[i%len(posts)]
 
 		if err := db.Create(&comment).Error; err != nil {
 			log.Fatalf("Error seeding comment: %v", err)
+		}
+		if i%5000 == 0 && i > 0 {
+			fmt.Println(i, "new comments added")
 		}
 	}
 

@@ -2,7 +2,6 @@ package factory
 
 import (
 	"gonga/app/Models"
-	imaginary "gonga/packages/Imaginary"
 
 	faker "github.com/brianvoe/gofakeit/v6"
 )
@@ -10,7 +9,7 @@ import (
 // TagFactory generates a fake tag instance
 func TagFactory() Models.Tag {
 	tag := Models.Tag{
-		Title:        imaginary.NewTagGenerator().UniqueTag(),
+		// Title:        imaginary.NewTagGenerator().UniqueTag(),
 		CoverImage:   faker.ImageURL(300, 400),
 		BackendImage: faker.ImageURL(800, 600),
 		Description:  faker.Paragraph(1, 5, 15, "."),

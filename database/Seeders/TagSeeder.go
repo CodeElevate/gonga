@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gonga/app/Models"
 	factory "gonga/database/Factories"
+	imaginary "gonga/packages/Imaginary"
 	"log"
 
 	"gorm.io/gorm"
@@ -24,10 +25,11 @@ func (s *TagSeeder) Run() {
 	}
 
 	// Create and save dummy tag records using the factory
-	for i := 0; i < 10; i++ {
+	tagGenerator := imaginary.NewTagGenerator()
+	for i := 0; i < 1000; i++ {
 		tag := factory.TagFactory()
 		tag.User = users[i%len(users)]
-
+		tag.Title = tagGenerator.UniqueTag()
 		if err := db.Create(&tag).Error; err != nil {
 			log.Fatalf("Error seeding tag: %v", err)
 		}

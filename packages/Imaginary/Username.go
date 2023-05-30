@@ -1,34 +1,50 @@
 package imaginary
 
 import (
-	"github.com/jaswdr/faker"
+	"strconv"
+	"strings"
 	"sync"
+
+	faker "github.com/brianvoe/gofakeit/v6"
 )
-// UserNameGenerator generates unique user names
+
+// UserNameGenerator generates unique usernames
 type UserNameGenerator struct {
-	faker        *faker.Faker
 	usedUserNames map[string]bool
-	mutex        sync.Mutex
+	mutex         sync.Mutex
 }
 
-// NewUserNameGenerator creates a new UserNameGenerator instance with a pre-initialized faker.Faker instance
-func NewUserNameGenerator(faker *faker.Faker) *UserNameGenerator {
+// NewUserNameGenerator creates a new UserNameGenerator instance
+func NewUserNameGenerator() *UserNameGenerator {
 	return &UserNameGenerator{
-		faker:        faker,
 		usedUserNames: make(map[string]bool),
 	}
 }
 
-// GenerateUniqueUserName generates a unique user name
+// GenerateUniqueUserName generates a case-insensitive unique username
 func (g *UserNameGenerator) UserName() string {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	userName := g.faker.Person().Name()
-	for g.usedUserNames[userName] {
-		userName = g.faker.Person().Name()
+	baseUserName := faker.Username()
+	userName := baseUserName
+	counter := 1
+
+	for g.isUserNameTaken(userName) {
+		userName = baseUserName + "_" + strconv.Itoa(counter)
+		counter++
 	}
 
-	g.usedUserNames[userName] = true
+	g.usedUserNames[strings.ToLower(userName)] = true
 	return userName
+}
+
+// isUserNameTaken checks if a username is already taken (case-insensitive)
+func (g *UserNameGenerator) isUserNameTaken(userName string) bool {
+	for usedName := range g.usedUserNames {
+		if strings.EqualFold(usedName, userName) {
+			return true
+		}
+	}
+	return false
 }

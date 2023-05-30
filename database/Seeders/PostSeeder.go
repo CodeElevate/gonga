@@ -30,13 +30,16 @@ func (s *PostSeeder) Run() {
 	}
 
 	// Create and save dummy post records using the factory
-	for i := 0; i < 200; i++ {
+	for i := 0; i < 20000; i++ {
 		post := factory.PostFactory()
 		post.User = &users[i%len(users)]
 		post.Hashtags = append(post.Hashtags, &tags[i%len(tags)])
 
 		if err := db.Create(&post).Error; err != nil {
 			log.Fatalf("Error seeding post: %v", err)
+		}
+		if i%5000 == 0 && i > 0 {
+			fmt.Println(i, "new posts added")
 		}
 	}
 
