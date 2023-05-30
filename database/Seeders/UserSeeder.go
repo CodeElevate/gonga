@@ -2,9 +2,11 @@ package seeder
 
 import (
 	"fmt"
-	"gonga/database/Factories"
-	"gorm.io/gorm"
+	factory "gonga/database/Factories"
+	imaginary "gonga/packages/Imaginary"
 	"log"
+
+	"gorm.io/gorm"
 )
 
 type UserSeeder struct {
@@ -16,10 +18,15 @@ func (s *UserSeeder) Run() {
 	db := s.DB
 
 	// Create and save dummy user records using the factory
-	for i := 0; i < 100; i++ {
+	UserNameGenerator := imaginary.NewUserNameGenerator()
+	for i := 0; i < 5000; i++ {
 		user := factory.UserFactory()
+		user.Username = UserNameGenerator.UserName()
 		if err := db.Create(&user).Error; err != nil {
 			log.Fatalf("Error seeding user: %v", err)
+		}
+		if i%1000 == 0 && i > 0 {
+			fmt.Println(i, "new user added")
 		}
 	}
 

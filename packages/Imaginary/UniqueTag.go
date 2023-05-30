@@ -1,6 +1,7 @@
 package imaginary
 
 import (
+	"strconv"
 	"sync"
 
 	faker "github.com/brianvoe/gofakeit/v6"
@@ -12,7 +13,7 @@ type TagGenerator struct {
 	mutex    sync.Mutex
 }
 
-// NewTagGenerator creates a new TagGenerator instance with a pre-initialized faker.Faker instance
+// NewTagGenerator creates a new TagGenerator instance
 func NewTagGenerator() *TagGenerator {
 	return &TagGenerator{
 		usedTags: make(map[string]bool),
@@ -24,9 +25,13 @@ func (g *TagGenerator) UniqueTag() string {
 	g.mutex.Lock()
 	defer g.mutex.Unlock()
 
-	tag := faker.Word()
+	baseTag := faker.Word()
+	tag := baseTag
+	counter := 1
+
 	for g.usedTags[tag] {
-		tag = faker.Word()
+		tag = baseTag + "_" + strconv.Itoa(counter)
+		counter++
 	}
 
 	g.usedTags[tag] = true

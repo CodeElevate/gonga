@@ -33,7 +33,7 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
 	var response utils.APIResponse
 
-	paginationScope, err := utils.Paginate(r, c.DB, &posts, &response, "User", "Medias", "Mentions.User", "Hashtag")
+	paginationScope, err := utils.Paginate(r, c.DB, &posts, &response, "User", "Medias", "Mentions.User", "Hashtags")
 	if err != nil {
 		utils.HandleError(w, err, http.StatusInternalServerError, "Failed to paginate posts")
 		return

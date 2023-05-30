@@ -4,6 +4,8 @@ package factory
 
 import (
 	"gonga/app/Models"
+	"gonga/utils"
+	"log"
 
 	faker "github.com/brianvoe/gofakeit/v6"
 )
@@ -11,10 +13,16 @@ import (
 // GenerateUser generates a fake user instance
 func UserFactory() Models.User {
 	birthday := faker.Date()
+	// Create user in database
+	hashedPassword, err := utils.HashPassword(faker.Password(true, true, true, true, false, 12))
+
+	if err != nil {
+		log.Println(err.Error())
+	}
+	// imaginary.NewUserNameGenerator().UserName()
 	user := Models.User{
-		Username:      faker.Username(),
 		Email:         faker.Email(),
-		Password:      faker.Password(true, true, true, true, false, 12),
+		Password:      hashedPassword,
 		FirstName:     faker.FirstName(),
 		LastName:      faker.LastName(),
 		AvatarURL:     faker.Person().Image,
