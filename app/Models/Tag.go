@@ -6,7 +6,7 @@ import (
 
 type Tag struct {
 	gorm.Model
-	Title        string  `json:"title" gorm:"unique"`
+	Title        string  `json:"title" gorm:"unique" faker:"unique"`
 	CoverImage   string  `json:"cover_image"`
 	BackendImage string  `json:"backend_image"`
 	Description  string  `json:"description"`

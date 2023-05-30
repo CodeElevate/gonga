@@ -16,7 +16,7 @@ func (s *UserSeeder) Run() {
 	db := s.DB
 
 	// Create and save dummy user records using the factory
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		user := factory.UserFactory()
 		if err := db.Create(&user).Error; err != nil {
 			log.Fatalf("Error seeding user: %v", err)

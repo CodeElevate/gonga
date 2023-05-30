@@ -31,28 +31,34 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	var comments []Models.Comment
 	var response utils.APIResponse
 
-	paginationScope, err := utils.Paginate(r, c.DB, &comments, &response, "User", "Mentions.User", "Childrens", "Likes")
+	// Apply the where condition to filter comments by postID and parentID
+	db := c.DB.Where("post_id = ? AND parent_id IS NULL", postID)
+
+	// Apply pagination and retrieve paginated comments
+	paginationScope, err := utils.Paginate(r, db, &comments, &response, "User", "Mentions.User", "Childrens", "Likes")
 	if err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	db := paginationScope(c.DB)
+	// Apply the pagination scope to the filtered query
+	db = paginationScope(db)
 
-	if err := db.Where("post_id = ? AND parent_id IS NULL", postID).Find(&comments).Error; err != nil {
+	// Retrieve the paginated comments
+	if err := db.Find(&comments).Error; err != nil {
 		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+
 	// Set the items value in the pagination struct
-	// pagination.Items = comments
 	response.Data = comments
 	response.Type = "success"
-	response.Message = "Data fetched successfully!"
+	response.Message = "data fetched successfully!"
 
 	// Send the response with the pagination struct
 	utils.JSONResponse(w, http.StatusOK, response)
-
 }
+
 
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	commentID, err := utils.GetParam(r, "id")

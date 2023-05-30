@@ -4,29 +4,32 @@ package factory
 
 import (
 	"gonga/app/Models"
+	"time"
 
-	"github.com/go-faker/faker/v4"
+	"github.com/jaswdr/faker"
 )
 
 // GenerateUser generates a fake user instance
 func UserFactory() Models.User {
+	faker := faker.New()
+
 	user := Models.User{
-		Username:     faker.Username(),
-		Email:        faker.Email(),
-		Password:     faker.Password(),
-		FirstName:    faker.FirstName(),
-		LastName:     faker.LastName(),
-		AvatarURL:    faker.URL(),
-		Bio:          faker.Sentence(),
-		Gender:       faker.Gender(),
-		MobileNo:     faker.Phonenumber(),
-		MobileNoCode: "+1",
-		// Birthday:    faker.DateTime.Date(),
-		// Country:     faker,
-		// City:        faker.City(),
-		WebsiteURL: faker.URL(),
-		// Occupation:  faker.JobTitle(),
-		Education:     faker.Word(),
+		Username:      faker.Username(),
+		Email:         faker.Internet().SafeEmail(),
+		Password:      faker.Internet().Password(),
+		FirstName:     faker.Person().FirstName(),
+		LastName:      faker.Person().LastName(),
+		AvatarURL:     faker.URL(),
+		Bio:           faker.Lorem().Sentence(400),
+		Gender:        faker.Person().Gender(),
+		MobileNo:      faker.Phone().Number(),
+		MobileNoCode:  faker.Address().CountryCode(),
+		Birthday:      &time.Time{},
+		Country:       faker.Address().Country(),
+		City:          faker.Address().City(),
+		WebsiteURL:    faker.Internet().URL(),
+		Occupation:    faker.Company().JobTitle(),
+		Education:     faker.Person().Title(),
 		EmailVerified: true,
 	}
 
