@@ -284,6 +284,7 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 // @Param		post	body		requests.UpdatePostTitleRequest	true	"Post title data"
 // @Accept json
 // @Produce json
+// @Param Authorization header string true "Bearer token"
 // @Success 200 {object} utils.APIResponse
 // @Failure 400 {object} utils.SwaggerErrorResponse
 // @Failure 401 {object} utils.SwaggerErrorResponse

@@ -1003,6 +1003,13 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/requests.UpdatePostTitleRequest"
                         }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     }
                 ],
                 "responses": {

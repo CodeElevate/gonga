@@ -7,6 +7,7 @@ import (
 	"gonga/app/Models"
 	mail "gonga/packages/Mail"
 	"gonga/utils"
+	"log"
 	"net/http"
 	"time"
 
@@ -42,8 +43,14 @@ func (c PasswordResetLinkController) Show(w http.ResponseWriter, r *http.Request
 // @Router /forgot-password [post]
 func (c PasswordResetLinkController) Create(w http.ResponseWriter, r *http.Request) {
 	var resetPassword requests.ResetPassowrdRequest
-	if err := utils.DecodeRequestBody(r, &resetPassword); err != nil {
-		utils.HandleError(w, err, http.StatusBadRequest)
+	if err := utils.DecodeJSONBody(w, r, &resetPassword); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.HandleError(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 	// Validate user data

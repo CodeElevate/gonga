@@ -5,6 +5,7 @@ import (
 	requests "gonga/app/Http/Requests/Auth"
 	responses "gonga/app/Http/Responses/Auth"
 	"gonga/utils"
+	"log"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -44,8 +45,14 @@ func (c LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var user requests.LoginRequest
 
-	if err := utils.DecodeRequestBody(r, &user); err != nil {
-		utils.HandleError(w, err, http.StatusInternalServerError)
+	if err := utils.DecodeJSONBody(w, r, &user); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.HandleError(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 	// Validate user data
