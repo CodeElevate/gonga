@@ -1,9 +1,11 @@
 package auth
 
 import (
+	"errors"
 	requests "gonga/app/Http/Requests/Auth"
 	responses "gonga/app/Http/Responses/Auth"
 	"gonga/utils"
+	"log"
 	"net/http"
 
 	"gorm.io/gorm"
@@ -20,17 +22,22 @@ func (c LoginController) Index(w http.ResponseWriter, r *http.Request) {
 func (c LoginController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /logincontroller/{id} request
 }
-/*
-@Summary [Short summary of API endpoint]
-@Description [Detailed description of API endpoint]
-@Tags [Comma-separated list of API tags]
-@Accept [List of accepted MIME types]
-@Produce [List of produced MIME types]
-@Param [Name of input parameter] [Parameter location] [Data type] [Required?] [Description]
-@Success [HTTP status code] [Response data type] [Response description]
-@Failure [HTTP status code] [Response data type] [Response description]
-@Router [API endpoint URL] [HTTP method]
-*/
+
+// Create handles the POST /login request for user login.
+//
+// This endpoint allows users to log in by providing their username and password.
+//
+// @Summary User login
+// @Description Logs in a user with the provided credentials
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param loginRequest body requests.LoginRequest true "Login credentials"
+// @Success 200 {object} responses.LoginResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /login [post]
 func (c LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	// Handle POST /logincontroller request
 	// You can get the request body by reading from r.Body
@@ -38,8 +45,14 @@ func (c LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var user requests.LoginRequest
 
-	if err := utils.DecodeRequestBody(r, &user); err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+	if err := utils.DecodeJSONBody(w, r, &user); err != nil {
+		var mr *utils.MalformedRequest
+		if errors.As(err, &mr) {
+			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
+		} else {
+			log.Print(err.Error())
+			utils.HandleError(w, err, http.StatusInternalServerError)
+		}
 		return
 	}
 	// Validate user data
@@ -50,14 +63,14 @@ func (c LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	// Check credentials and get user ID from database
 	userID, err := utils.Authenticate(user.Username, user.Password, c.DB)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "Invalid username or password"})
+		utils.HandleError(w, errors.New("invalid username or password"), http.StatusUnauthorized)
 		return
 	}
 
 	// Generate JWT token
 	token, err := utils.GenerateToken(userID)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 

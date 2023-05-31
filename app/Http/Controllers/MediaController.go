@@ -16,37 +16,18 @@ type MediaController struct {
 	DB *gorm.DB
 }
 
-// Upload handles the POST /upload request and uploads multiple files to the server.
-// It parses the multipart form, retrieves the files from the request, and uploads them to a cloud storage service (Cloudinary).
-// The uploaded media records are also stored in the database.
-//
-// Parameters:
-// - w: http.ResponseWriter - the response writer used to send HTTP responses.
-// - r: *http.Request - the HTTP request containing the uploaded files.
-//
-// Response:
-// The function sends an HTTP response with the uploaded media information in JSON format.
-// The response includes the URL, type, filename, size, and ID for each uploaded file.
-//
-// Example:
-//
-//	POST /upload HTTP/1.1
-//	Host: example.com
-//	Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
-//
-//	------WebKitFormBoundary7MA4YWxkTrZu0gW
-//	Content-Disposition: form-data; name="files"; filename="image1.jpg"
-//	Content-Type: image/jpeg
-//
-//	<binary data>
-//
-//	------WebKitFormBoundary7MA4YWxkTrZu0gW
-//	Content-Disposition: form-data; name="files"; filename="image2.jpg"
-//	Content-Type: image/jpeg
-//
-//	<binary data>
-//
-//	------WebKitFormBoundary7MA4YWxkTrZu0gW--
+//	@Summary		Upload media files
+//	@Description	Upload media files
+//	@Tags			Media
+//	@Accept			mpfd
+//	@Produce		json
+//	@Param			files		formData	file							true	"Media files to upload"
+//	@Param			owner_type	formData	string							false	"Type of the owner of the media file"
+//	@Param			owner_id	formData	string							false	"ID of the owner of the media file"
+//	@Success		200			{array}		responses.UploadMediaResponse	"success"
+//	@Failure		400			{object}	utils.APIResponse				"error"
+//	@Router			/upload [POST]
+//	@Security		BearerAuth
 func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 	// Handle POST /upload request
 	err := r.ParseMultipartForm(32 << 20) // Max upload file size: 32MB
@@ -63,7 +44,7 @@ func (c MediaController) Upload(w http.ResponseWriter, r *http.Request) {
 		ownerType = "posts" // Fallback value for owner type (assuming it's a post)
 	}
 	ownerID := r.FormValue("owner_id") // Get the owner ID from the request form data
-	
+
 	cloudinaryClient := cloudinary.NewCloudinaryClient()
 
 	for _, fileHeader := range files {

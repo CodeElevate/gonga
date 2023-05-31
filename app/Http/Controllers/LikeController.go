@@ -23,20 +23,26 @@ func (c LikeController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /likecontroller/{id} request
 }
 
-// Like increases the like count of a post.
-//	@Summary	Like a post
-//	@Tags		Posts
-//	@Produce	json
-//	@Param		id	path		int	true	"Post ID"
-//	@Success	200	{object}	map[string]string
-//	@Failure	404	{object}	map[string]string
-//	@Failure	500	{object}	map[string]string
-//	@Router		/posts/{id}/like [post]
+// Create handles the POST /likes request to create a new like.
+//
+// This endpoint allows users to create a new like for a specific likeable item.
+//
+// @Summary Create a new like
+// @Description Creates a new like
+// @Tags Likes
+// @Accept json
+// @Produce json
+// @Param like body requests.CreateLikeRequest true "Like data"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /likes [post]
 func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	// Parse like data from request body
@@ -47,7 +53,7 @@ func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -57,7 +63,7 @@ func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	var count int64
 	if c.DB.Table(createReq.LikeableType).Where("id = ?", createReq.LikeableID).Count(&count); count == 0 {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "likeabled id doesn't exist."})
+		utils.HandleError(w, errors.New("likeabled id doesn't exist"), http.StatusNotFound)
 		return
 	}
 
@@ -67,10 +73,13 @@ func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 		userID, createReq.LikeableID, createReq.LikeableType).First(&existingLike).Error; err == nil {
 		// User has already liked the record, perform unlike operation
 		if err := c.DB.Unscoped().Delete(&existingLike).Error; err != nil {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 			return
 		}
-		utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "unliked successfully!"})
+		utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+			Type:    "success",
+			Message: "unliked successfully!",
+		})
 		return
 	}
 
@@ -81,11 +90,14 @@ func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	// Save the like to the database
 	if err := c.DB.Create(&like).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"message": "Failed to save like", "error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError, "failed to save like")
 		return
 	}
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "like was created successfully!"})
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Type:    "success",
+		Message: "like was created successfully!",
+	})
 }
 
 func (c LikeController) Update(w http.ResponseWriter, r *http.Request) {
@@ -94,47 +106,55 @@ func (c LikeController) Update(w http.ResponseWriter, r *http.Request) {
 	// You can send a response by writing to w
 }
 
-// Unlike decreases the like count of a post.
-//	@Summary	Unlike a post
-//	@Tags		Posts
-//	@Produce	json
-//	@Param		id	path		int	true	"Post ID"
-//	@Success	200	{object}	map[string]string
-//	@Failure	404	{object}	map[string]string
-//	@Failure	500	{object}	map[string]string
-//	@Router		/posts/{id}/unlike [post]
+// Delete handles the DELETE /likes/{id} request to delete a like.
+//
+// This endpoint allows users to delete a like based on its ID.
+//
+// @Summary Delete a like
+// @Description Deletes a like
+// @Tags Likes
+// @Param id path string true "Like ID"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 404 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /likes/{id} [delete]
 func (c LikeController) Delete(w http.ResponseWriter, r *http.Request) {
 	likeID, err := utils.GetParam(r, "id") // Get the like ID from the URL parameter
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 	userID, err := utils.GetUserIDFromContext(r.Context()) // Get the user ID from the context
 
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Check if the like exists
 	var like Models.Like
 	if err := c.DB.First(&like, likeID).Error; err != nil {
-		utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Like not found"})
+		utils.HandleError(w, errors.New("like not found"), http.StatusNotFound)
 		return
 	}
 
 	// Check if the current user is the owner of the like
 	if like.UserID != uint(userID.(float64)) {
-		utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+		utils.HandleError(w, errors.New("Unauthorized"), http.StatusUnauthorized)
 		return
 	}
 
 	// Delete the like
 	if err := c.DB.Delete(&like).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Return success response
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Like deleted successfully"})
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Type:    "success",
+		Message: "like deleted successfully",
+	})
 }
