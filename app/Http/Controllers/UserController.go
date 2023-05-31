@@ -14,6 +14,16 @@ type UserController struct {
 	DB *gorm.DB
 }
 
+//	@Summary		Get a list of users with pagination
+//	@Description	Retrieve a paginated list of users
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			page		query		int					false	"Page number for pagination"
+//	@Param			per_page	query		int					false	"Number of items per page"
+//	@Success		200			{object}	utils.APIResponse	"success"
+//	@Failure		500			{object}	utils.APIResponse	"error"
+//	@Router			/users [GET]
 func (uc UserController) Index(w http.ResponseWriter, r *http.Request) {
 	var users []Models.User
 	var response utils.APIResponse
@@ -33,38 +43,23 @@ func (uc UserController) Index(w http.ResponseWriter, r *http.Request) {
 	// Set the items value in the pagination struct
 	response.Data = users
 	response.Type = "success"
-    response.Message = "data retrieved successfully"
+	response.Message = "data retrieved successfully"
 
 	// Send the response with the pagination struct
 	utils.JSONResponse(w, http.StatusOK, response)
 
 }
 
-// swagger:response UserResponse
-type UserResponse struct {
-	// in:body
-	Body struct {
-		ID       int    `json:"id"`
-		Name     string `json:"name"`
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-}
-
-// swagger:response ErrorResponse
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
-//	@Summary		Get user by ID
-//	@Description	Get user information by user ID
-//	@ID				get-user-by-id
+//	@Summary		Get a user by username
+//	@Description	Retrieve a user by their username
+//	@Tags			Users
+//	@Accept			json
 //	@Produce		json
-//	@Param			id	path		int	true	"User ID"
-//	@Success		200	{object}	UserResponse
-//	@Failure		400	{object}	ErrorResponse
-//	@Failure		404	{object}	ErrorResponse
-//	@Router			/users/{id} [get]
+//	@Param			username	path		string				true	"Username of the user to retrieve"
+//	@Success		200			{object}	utils.APIResponse	"success"
+//	@Failure		400			{object}	utils.APIResponse	"error"
+//	@Failure		404			{object}	utils.APIResponse	"error"
+//	@Router			/users/{username} [GET]
 func (uc UserController) Show(w http.ResponseWriter, r *http.Request) {
 	username, err := utils.GetParam(r, "username")
 	if err != nil {
@@ -79,10 +74,10 @@ func (uc UserController) Show(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Return successful response with the user data
-	utils.JSONResponse(w, http.StatusOK,  utils.APIResponse{
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
 		Type: "success",
-        Data: user,
-    })
+		Data: user,
+	})
 }
 
 func (uc UserController) Create(w http.ResponseWriter, r *http.Request) {
@@ -91,25 +86,38 @@ func (uc UserController) Create(w http.ResponseWriter, r *http.Request) {
 	// You can send a response by writing to w
 }
 
+//	@Summary		Update a user
+//	@Description	Update the details of a user
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			username	path		string						true	"Username of the user to update"
+//	@Param			updateReq	body		requests.UpdateUserRequest	true	"Update request body"
+//	@Success		200			{object}	utils.APIResponse			"success"
+//	@Failure		400			{object}	utils.APIResponse			"error"
+//	@Failure		404			{object}	utils.APIResponse			"error"
+//	@Failure		500			{object}	utils.APIResponse			"error"
+//	@Router			/users/{username} [PUT]
+//	@Security		BearerAuth
 func (uc UserController) Update(w http.ResponseWriter, r *http.Request) {
 	// Get user ID from request path
 	username, err := utils.GetParam(r, "username")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	// Fetch user from the database
 	var user Models.User
 	if err := uc.DB.Where("username = ?", username).First(&user).Error; err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		utils.HandleError(w, err, http.StatusNotFound)
 		return
 	}
 
 	// Parse update request from request body
 	var updateReq requests.UpdateUserRequest
 	if err := utils.DecodeRequestBody(r, &updateReq); err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -164,14 +172,28 @@ func (uc UserController) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Save updated user to the database
 	if err := uc.DB.Save(&user).Error; err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Send success response with updated user information
-	utils.JSONResponse(w, http.StatusOK, user)
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Type: "success",
+		Data: user,
+	})
 }
 
+//	@Summary		Delete a user
+//	@Description	Delete a user by their ID
+//	@Tags			Users
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	string	true	"ID of the user to delete"
+//	@Success		204	"success"
+//	@Failure		404	{object}	utils.APIResponse	"error"
+//	@Failure		500	{object}	utils.APIResponse	"error"
+//	@Router			/users/{id} [DELETE]
+//	@Security		BearerAuth
 func (uc UserController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Handle DELETE /users/{id} request
 }

@@ -23,11 +23,25 @@ func (c RegisterController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /registercontroller/{id} request
 }
 
+// Create handles the POST /register request for user registration.
+//
+// This endpoint allows users to register by providing their username, email, and password.
+//
+// @Summary User registration
+// @Description Registers a new user with the provided information
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param registerRequest body requests.RegisterRequest true "User registration data"
+// @Success 200 {object} responses.RegisterResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /register [post]
 func (c RegisterController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var user requests.RegisterRequest
 	if err := utils.DecodeRequestBody(r, &user); err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 	// Validate user data
@@ -39,7 +53,7 @@ func (c RegisterController) Create(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := utils.HashPassword(user.Password)
 	
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	newUser := Models.User{
@@ -49,14 +63,14 @@ func (c RegisterController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	result := c.DB.Create(&newUser)
 	if result.Error != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": result.Error.Error()})
+		utils.HandleError(w, result.Error, http.StatusInternalServerError)
 		return
 	}
 
 	// Generate JWT token
 	token, err := utils.GenerateToken(int(newUser.ID))
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 

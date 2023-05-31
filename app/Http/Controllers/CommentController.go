@@ -19,11 +19,23 @@ type CommentController struct {
 	DB *gorm.DB
 }
 
+// Index handles the GET /posts/{id}/comments request to retrieve comments for a post.
+//
+// This endpoint allows users to retrieve comments for a specific post based on its ID.
+//
+// @Summary Get comments for a post
+// @Description Retrieves comments for a specific post
+// @Tags Comments
+// @Param id path string true "Post ID"
+// @Success 200 {object} utils.SwaggerPagination
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /posts/{id}/comments [get]
 func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -37,7 +49,7 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	// Apply pagination and retrieve paginated comments
 	paginationScope, err := utils.Paginate(r, db, &comments, &response, "User", "Mentions.User", "Childrens", "Likes")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -46,7 +58,7 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 
 	// Retrieve the paginated comments
 	if err := db.Find(&comments).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -59,11 +71,24 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	utils.JSONResponse(w, http.StatusOK, response)
 }
 
-
+// Show handles the GET /comments/{id} request to retrieve a specific comment.
+//
+// This endpoint retrieves a specific comment by its ID.
+//
+// @Summary Get a comment
+// @Description Retrieves a specific comment by its ID
+// @Tags Comments
+// @Param id path string true "Comment ID"
+// @Produce json
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 404 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /comments/{id} [get]
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	commentID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -74,38 +99,44 @@ func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	if err := c.DB.Preload("Childrens").First(&comment, commentID).Error; err != nil {
 		// If the comment is not found, return a not found response
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Comment not found"})
+			utils.HandleError(w, err, http.StatusNotFound, "comment not found")
 			return
 		}
 
 		// If an error occurs during the database query, return an internal server error response
-		utils.JSONResponse(w, http.StatusInternalServerError, err.Error())
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Send the comment as a response
 	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
-		Data: comment,
-		Type: "success",
+		Data:    comment,
+		Type:    "success",
+		Message: "Comment retrieved successfully!",
 	})
 }
 
-// AddComment adds a comment to a post.
-//	@Summary	Add a comment to a post
-//	@Tags		Comments
-//	@Accept		json
-//	@Produce	json
-//	@Param		id		path		int								true	"Post ID"
-//	@Param		comment	body		requests.CreateCommentRequest	true	"Comment data"
-//	@Success	200		{object}	map[string]string
-//	@Failure	400		{object}	map[string]string
-//	@Failure	404		{object}	map[string]string
-//	@Failure	500		{object}	map[string]string
-//	@Router		/posts/{id}/comments [post]
+// Create handles the POST /posts/{id}/comments request to create a new comment for a post.
+//
+// This endpoint allows authenticated users to create a new comment for a specific post.
+//
+// @Summary Create a new comment
+// @Description Creates a new comment for a specific post
+// @Tags Comments
+// @Param id path string true "Post ID"
+// @Param Authorization header string true "Bearer token"
+// @Accept json
+// @Produce json
+// @Param body body requests.CreateCommentRequest true "Comment data"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /posts/{id}/comments [post]
 func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 	postIDStr, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -118,7 +149,7 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -129,21 +160,21 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := utils.GetUserIDFromContext(r.Context())
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Convert postID from string to uint
 	postID, err := strconv.ParseUint(postIDStr, 10, 64)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid post ID"})
+		utils.HandleError(w, errors.New("invalid post ID"), http.StatusBadRequest)
 		return
 	}
 	// Check if the parent comment exists
 	if createReq.ParentID != nil {
 		var parentComment Models.Comment
 		if err := c.DB.First(&parentComment, createReq.ParentID).Error; err != nil {
-			utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": "Invalid parent comment ID"})
+			utils.HandleError(w, errors.New("invalid parent comment ID"), http.StatusBadRequest)
 			return
 		}
 	}
@@ -158,7 +189,7 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 	// Insert the comment into the database
 	if err := c.DB.Create(&newComment).Error; err != nil {
 		log.Println(err.Error())
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to create comment"})
+		utils.HandleError(w, errors.New("failed to create comment"), http.StatusInternalServerError)
 		return
 	}
 
@@ -172,37 +203,41 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		// Save the mention to the database
 		if err := c.DB.Create(&mention).Error; err != nil {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 			return
 		}
 	}
 
 	// Send the created comment as a response
-	utils.JSONResponse(w, http.StatusOK, &utils.ControllerResponse{
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
 		Message: "comment created successfully!",
-		Data:    newComment,
 	})
 }
 
-// UpdateComment updates a comment on a post.
+// Update handles the PUT /comments/{id} request to update a specific comment.
 //
-//	@Summary	Update a comment on a post
-//	@Tags		Comments
-//	@Accept		json
-//	@Produce	json
-//	@Param		id			path		int								true	"Post ID"
-//	@Param		comment_id	path		int								true	"Comment ID"
-//	@Param		comment		body		requests.UpdateCommentRequest	true	"Comment data"
-//	@Success	200			{object}	map[string]string
-//	@Failure	400			{object}	map[string]string
-//	@Failure	404			{object}	map[string]string
-//	@Failure	500			{object}	map[string]string
-//	@Router		/posts/{id}/comments/{comment_id} [put]
+// This endpoint updates a specific comment by its ID.
+//
+// @Summary Update a comment
+// @Description Updates a specific comment by its ID
+// @Tags Comments
+// @Param id path string true "Comment ID"
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Param body body requests.UpdateCommentRequest true "Update Comment Request"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 404 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /comments/{id} [put]
 func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
@@ -215,7 +250,7 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 			utils.JSONResponse(w, mr.Status(), map[string]string{"error": mr.Error()})
 		} else {
 			log.Print(err.Error())
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+			utils.HandleError(w, err, http.StatusInternalServerError)
 		}
 		return
 	}
@@ -226,7 +261,7 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := utils.GetUserIDFromContext(r.Context())
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -234,9 +269,9 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 	var comment Models.Comment
 	if err := c.DB.Where("id = ? AND user_id = ?", commentID, userID).First(&comment).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Comment not found"})
+			utils.HandleError(w, errors.New("comment not found"), http.StatusNotFound)
 		} else {
-			utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to fetch comment"})
+			utils.HandleError(w, err, http.StatusInternalServerError, "failed to fetch comment")
 		}
 		return
 	}
@@ -246,56 +281,65 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 
 	// Save the updated comment
 	if err := c.DB.Save(&comment).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update comment"})
+		utils.HandleError(w, errors.New("failed to update comment"), http.StatusInternalServerError)
 		return
 	}
 
 	// Perform the edit mentions operation
 	err = services.EditMentions(c.DB, comment.ID, "comments", updateReq.Mentions)
 	if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusInternalServerError)
 		return
 	}
 	// Send the updated comment in the response
-	utils.JSONResponse(w, http.StatusOK, &utils.ControllerResponse{
-		Message: "Comment updated successfully!",
+	utils.JSONResponse(w, http.StatusOK, &utils.APIResponse{
+		Type:    "success",
+		Message: "comment updated successfully!",
 		Data:    comment,
 	})
 
 }
 
-// DeleteComment deletes a comment from a post.
+// Delete handles the DELETE /comments/{id} request to delete a specific comment.
 //
-//	@Summary	Delete a comment from a post
-//	@Tags		Comments
-//	@Produce	json
-//	@Param		id			path		int	true	"Post ID"
-//	@Param		comment_id	path		int	true	"Comment ID"
-//	@Success	200			{object}	map[string]string
-//	@Failure	404			{object}	map[string]string
-//	@Failure	500			{object}	map[string]string
-//	@Router		/posts/{id}/comments/{comment_id} [delete]
+// This endpoint deletes a specific comment by its ID.
+//
+// @Summary Delete a comment
+// @Description Deletes a specific comment by its ID
+// @Tags Comments
+// @Param id path string true "Comment ID"
+// @Accept json
+// @Produce json
+// @Param Authorization header string true "Bearer token"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 401 {object} utils.SwaggerErrorResponse
+// @Failure 404 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /comments/{id} [delete]
 func (c CommentController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")
 	if err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 
 	// Check if the comment exists
 	var comment Models.Comment
 	if err := c.DB.First(&comment, commentID).Error; err != nil {
-		utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "Comment not found"})
+		utils.HandleError(w, errors.New("comment not found"), http.StatusNotFound)
 		return
 	}
 
 	// Delete the comment
 	if err := c.DB.Delete(&comment).Error; err != nil {
-
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": "Failed to delete comment"})
+		utils.HandleError(w, errors.New("failed to delete comment"), http.StatusInternalServerError)
 		return
 	}
 
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"error": "Comment deleted successfully"})
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Type: "success",
+		Message: "comment deleted successfully",
+	})
 }

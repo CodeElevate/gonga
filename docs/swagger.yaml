@@ -1,30 +1,68 @@
-basePath: /api/v1
+basePath: /
 definitions:
   Models.Mention:
     type: object
-  controllers.ErrorResponse:
-    properties:
-      error:
-        type: string
+  Models.Tag:
     type: object
-  controllers.UserResponse:
-    properties:
-      body:
-        description: in:body
-        properties:
-          email:
-            type: string
-          id:
-            type: integer
-          name:
-            type: string
-          password:
-            type: string
-        type: object
-    type: object
+  Models.Visibility:
+    enum:
+    - public
+    - private
+    - friends
+    type: string
+    x-enum-varnames:
+    - VisibilityPublic
+    - VisibilityPrivate
+    - VisibilityFriends
   requests.CreateCommentRequest:
     type: object
+  requests.CreateLikeRequest:
+    properties:
+      likeable_id:
+        type: integer
+      likeable_type:
+        type: string
+    required:
+    - likeable_id
+    - likeable_type
+    type: object
   requests.CreatePostRequest:
+    type: object
+  requests.LoginRequest:
+    properties:
+      password:
+        minLength: 8
+        type: string
+      username:
+        maxLength: 5
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  requests.RegisterRequest:
+    properties:
+      email:
+        type: string
+      password:
+        minLength: 8
+        type: string
+      username:
+        maxLength: 5
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  requests.ResetPassowrdRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
     type: object
   requests.UpdateCommentRequest:
     properties:
@@ -52,7 +90,35 @@ definitions:
     required:
     - body
     type: object
-  requests.UpdatePostRequest:
+  requests.UpdatePostHashtagRequest:
+    properties:
+      hashtags:
+        items:
+          $ref: '#/definitions/Models.Tag'
+        maxItems: 5
+        minItems: 1
+        type: array
+    type: object
+  requests.UpdatePostMediaRequest:
+    type: object
+  requests.UpdatePostSettingsRequest:
+    properties:
+      featured_expiry:
+        type: string
+      is_featured:
+        type: boolean
+      is_promoted:
+        type: boolean
+      promotion_expiry:
+        type: string
+      visibility:
+        $ref: '#/definitions/Models.Visibility'
+    required:
+    - featured_expiry
+    - is_featured
+    - is_promoted
+    - promotion_expiry
+    - visibility
     type: object
   requests.UpdatePostTitleRequest:
     properties:
@@ -61,6 +127,80 @@ definitions:
         type: string
     required:
     - title
+    type: object
+  requests.UpdateUserRequest:
+    properties:
+      avatar_url:
+        type: string
+      background_image_url:
+        type: string
+      bio:
+        maxLength: 500
+        type: string
+      birthday:
+        type: string
+      city:
+        maxLength: 50
+        type: string
+      country:
+        maxLength: 50
+        type: string
+      education:
+        maxLength: 50
+        type: string
+      first_name:
+        maxLength: 50
+        type: string
+      gender:
+        enum:
+        - male
+        - female
+        type: string
+      last_name:
+        type: string
+      mobile_no:
+        type: string
+      mobile_no_code:
+        type: string
+      occupation:
+        maxLength: 50
+        type: string
+      website_url:
+        type: string
+    required:
+    - first_name
+    - mobile_no_code
+    type: object
+  responses.LoginResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  responses.RegisterResponse:
+    properties:
+      message:
+        type: string
+      token:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  responses.UploadMediaResponse:
+    properties:
+      filename:
+        type: string
+      id:
+        type: integer
+      size:
+        type: integer
+      type:
+        type: string
+      url:
+        type: string
     type: object
   utils.APIError:
     properties:
@@ -98,6 +238,36 @@ definitions:
       type:
         type: string
     type: object
+  utils.SwaggerErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/utils.APIError'
+        type: array
+      message:
+        type: string
+      type:
+        type: string
+    type: object
+  utils.SwaggerPagination:
+    properties:
+      data: {}
+      message:
+        type: string
+      meta:
+        additionalProperties: true
+        type: object
+      type:
+        type: string
+    type: object
+  utils.SwaggerSuccessResponse:
+    properties:
+      data: {}
+      message:
+        type: string
+      type:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -108,6 +278,260 @@ info:
   title: Gonga API Documentation
   version: "1.0"
 paths:
+  /comments/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Delete a comment
+      tags:
+      - Comments
+    get:
+      description: Retrieves a specific comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Get a comment
+      tags:
+      - Comments
+    put:
+      consumes:
+      - application/json
+      description: Updates a specific comment by its ID
+      parameters:
+      - description: Comment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Update Comment Request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateCommentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update a comment
+      tags:
+      - Comments
+  /forgot-password:
+    post:
+      consumes:
+      - application/json
+      description: Sends a password reset link to the user's email address
+      parameters:
+      - description: User email for password reset
+        in: body
+        name: resetPasswordRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.ResetPassowrdRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Send password reset link
+      tags:
+      - Authentication
+  /likes:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new like
+      parameters:
+      - description: Like data
+        in: body
+        name: like
+        required: true
+        schema:
+          $ref: '#/definitions/requests.CreateLikeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Create a new like
+      tags:
+      - Likes
+  /likes/{id}:
+    delete:
+      description: Deletes a like
+      parameters:
+      - description: Like ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Delete a like
+      tags:
+      - Likes
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Logs in a user with the provided credentials
+      parameters:
+      - description: Login credentials
+        in: body
+        name: loginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/requests.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: User login
+      tags:
+      - Authentication
   /posts:
     get:
       description: Retrieves a list of all posts from the server.
@@ -117,23 +541,29 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/utils.APIResponse'
+            $ref: '#/definitions/utils.SwaggerPagination'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/utils.APIResponse'
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/utils.APIResponse'
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
       summary: Get all posts
       tags:
       - Posts
     post:
       consumes:
       - application/json
+      description: Creates a new post
       parameters:
-      - description: Post data
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Create post request body
         in: body
         name: post
         required: true
@@ -142,29 +572,30 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
       summary: Create a new post
       tags:
       - Posts
   /posts/{id}:
     delete:
+      consumes:
+      - application/json
+      description: Deletes a specific post
       parameters:
       - description: Post ID
         in: path
@@ -177,25 +608,28 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Delete a specific post
       tags:
       - Posts
     get:
+      description: Retrieves the details of a specific post
       parameters:
       - description: Post ID
         in: path
@@ -208,73 +642,55 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Get a post by ID
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Get a specific post
       tags:
       - Posts
     put:
       consumes:
       - application/json
+      description: Updates the details of a specific post
       parameters:
       - description: Post ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Post data
-        in: body
-        name: post
-        required: true
-        schema:
-          $ref: '#/definitions/requests.UpdatePostRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.APIResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update a specific post
       tags:
       - Posts
   /posts/{id}/body:
     put:
       consumes:
       - application/json
+      description: Updates the body of a specific post
       parameters:
       - description: Post ID
         in: path
@@ -293,43 +709,65 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update the body of a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update the body of a specific post
       tags:
       - Posts
   /posts/{id}/comments:
-    post:
-      consumes:
-      - application/json
+    get:
+      description: Retrieves comments for a specific post
       parameters:
       - description: Post ID
         in: path
         name: id
         required: true
-        type: integer
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerPagination'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Get comments for a post
+      tags:
+      - Comments
+    post:
+      consumes:
+      - application/json
+      description: Creates a new comment for a specific post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
       - description: Comment data
         in: body
-        name: comment
+        name: body
         required: true
         schema:
           $ref: '#/definitions/requests.CreateCommentRequest'
@@ -339,153 +777,144 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Add a comment to a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Create a new comment
       tags:
       - Comments
-  /posts/{id}/comments/{comment_id}:
-    delete:
-      parameters:
-      - description: Post ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Comment ID
-        in: path
-        name: comment_id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Delete a comment from a post
-      tags:
-      - Comments
+  /posts/{id}/hashtags:
     put:
       consumes:
       - application/json
+      description: Updates the hashtags of a specific post
       parameters:
       - description: Post ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Comment ID
-        in: path
-        name: comment_id
-        required: true
-        type: integer
-      - description: Comment data
+      - description: Post hashtag data
         in: body
-        name: comment
+        name: post
         required: true
         schema:
-          $ref: '#/definitions/requests.UpdateCommentRequest'
+          $ref: '#/definitions/requests.UpdatePostHashtagRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update a comment on a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update the hashtags of a specific post
       tags:
-      - Comments
-  /posts/{id}/like:
-    post:
+      - Posts
+  /posts/{id}/medias:
+    put:
+      consumes:
+      - application/json
+      description: Updates the medias of a specific post
       parameters:
       - description: Post ID
         in: path
         name: id
         required: true
         type: integer
+      - description: Post media data
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePostMediaRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Like a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update the medias of a specific post
+      tags:
+      - Posts
+  /posts/{id}/settings:
+    put:
+      consumes:
+      - application/json
+      description: Updates the settings of a specific post
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Post settings data
+        in: body
+        name: post
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdatePostSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.SwaggerSuccessResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update the settings of a specific post
       tags:
       - Posts
   /posts/{id}/title:
     put:
       consumes:
       - application/json
+      description: Updates the title of a specific post
       parameters:
       - description: Post ID
         in: path
@@ -504,86 +933,209 @@ paths:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
+            $ref: '#/definitions/utils.APIResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "401":
+          description: Unauthorized
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Update the title of a post
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: Update the title of a specific post
       tags:
       - Posts
-  /posts/{id}/unlike:
+  /register:
     post:
+      consumes:
+      - application/json
+      description: Registers a new user with the provided information
       parameters:
-      - description: Post ID
-        in: path
-        name: id
+      - description: User registration data
+        in: body
+        name: registerRequest
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/requests.RegisterRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            additionalProperties:
-              type: string
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties:
-              type: string
-            type: object
-      summary: Unlike a post
-      tags:
-      - Posts
-  /users/{id}:
-    get:
-      description: Get user information by user ID
-      operationId: get-user-by-id
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/controllers.UserResponse'
+            $ref: '#/definitions/responses.RegisterResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
-        "404":
-          description: Not Found
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+        "500":
+          description: Internal Server Error
           schema:
-            $ref: '#/definitions/controllers.ErrorResponse'
-      summary: Get user by ID
+            $ref: '#/definitions/utils.SwaggerErrorResponse'
+      summary: User registration
+      tags:
+      - Authentication
+  /upload:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload media files
+      parameters:
+      - description: Media files to upload
+        in: formData
+        name: files
+        required: true
+        type: file
+      - description: Type of the owner of the media file
+        in: formData
+        name: owner_type
+        type: string
+      - description: ID of the owner of the media file
+        in: formData
+        name: owner_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            items:
+              $ref: '#/definitions/responses.UploadMediaResponse'
+            type: array
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Upload media files
+      tags:
+      - Media
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a paginated list of users
+      parameters:
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Number of items per page
+        in: query
+        name: per_page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "500":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      summary: Get a list of users with pagination
+      tags:
+      - Users
+  /users/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by their ID
+      parameters:
+      - description: ID of the user to delete
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: success
+        "404":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "500":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete a user
+      tags:
+      - Users
+  /users/{username}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a user by their username
+      parameters:
+      - description: Username of the user to retrieve
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "404":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      summary: Get a user by username
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update the details of a user
+      parameters:
+      - description: Username of the user to update
+        in: path
+        name: username
+        required: true
+        type: string
+      - description: Update request body
+        in: body
+        name: updateReq
+        required: true
+        schema:
+          $ref: '#/definitions/requests.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "400":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "404":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+        "500":
+          description: error
+          schema:
+            $ref: '#/definitions/utils.APIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update a user
+      tags:
+      - Users
 swagger: "2.0"

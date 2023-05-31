@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	requests "gonga/app/Http/Requests/Auth"
 	"gonga/app/Models"
@@ -16,8 +17,6 @@ type PasswordResetLinkController struct {
 	DB *gorm.DB
 }
 
-
-
 func (c PasswordResetLinkController) Index(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /passwordresetlinkcontroller request
 }
@@ -26,10 +25,25 @@ func (c PasswordResetLinkController) Show(w http.ResponseWriter, r *http.Request
 	// Handle GET /passwordresetlinkcontroller/{id} request
 }
 
+// Create handles the POST /forgot-password request to send a password reset link.
+//
+// This endpoint allows users to request a password reset by providing their email address.
+//
+// @Summary Send password reset link
+// @Description Sends a password reset link to the user's email address
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param resetPasswordRequest body requests.ResetPassowrdRequest true "User email for password reset"
+// @Success 200 {object} utils.SwaggerSuccessResponse
+// @Failure 400 {object} utils.SwaggerErrorResponse
+// @Failure 404 {object} utils.SwaggerErrorResponse
+// @Failure 500 {object} utils.SwaggerErrorResponse
+// @Router /forgot-password [post]
 func (c PasswordResetLinkController) Create(w http.ResponseWriter, r *http.Request) {
-    var resetPassword requests.ResetPassowrdRequest
-    if err := utils.DecodeRequestBody(r, &resetPassword); err != nil {
-		utils.JSONResponse(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+	var resetPassword requests.ResetPassowrdRequest
+	if err := utils.DecodeRequestBody(r, &resetPassword); err != nil {
+		utils.HandleError(w, err, http.StatusBadRequest)
 		return
 	}
 	// Validate user data
@@ -37,39 +51,41 @@ func (c PasswordResetLinkController) Create(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	// Check if a user with the given email exists
-    if !utils.UserExistsWithEmail(c.DB, resetPassword.Email) {
-        // Return a 404 response if the user doesn't exist
-		utils.JSONResponse(w, http.StatusNotFound, map[string]string{"error": "User not found"})
-        return
-    }
-    var passwordReset Models.PasswordReset
-    passwordReset.Email = resetPassword.Email
-
-    // Generate a unique token
-    token, err := utils.GenerateRandomString(32)
-    if err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-        return
-    }
-    passwordReset.Token = token
-
-    // Set expiry time
-    passwordReset.Expiry = time.Now().Add(time.Hour * 24).Unix()
-
-    // Save the password reset token in the database
-    if err := c.DB.Create(&passwordReset).Error; err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-        return
-    }
-    
-    // Send email with the password reset link containing the token
-	if err := sendPasswordResetEmail(passwordReset.Email, token); err != nil {
-		utils.JSONResponse(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+	if !utils.UserExistsWithEmail(c.DB, resetPassword.Email) {
+		// Return a 404 response if the user doesn't exist
+		utils.HandleError(w, errors.New("user not found"), http.StatusNotFound)
 		return
 	}
-	utils.JSONResponse(w, http.StatusOK, map[string]string{"message": "Password reset link sent"})
-}
+	var passwordReset Models.PasswordReset
+	passwordReset.Email = resetPassword.Email
 
+	// Generate a unique token
+	token, err := utils.GenerateRandomString(32)
+	if err != nil {
+		utils.HandleError(w, err, http.StatusInternalServerError)
+		return
+	}
+	passwordReset.Token = token
+
+	// Set expiry time
+	passwordReset.Expiry = time.Now().Add(time.Hour * 24).Unix()
+
+	// Save the password reset token in the database
+	if err := c.DB.Create(&passwordReset).Error; err != nil {
+		utils.HandleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	// Send email with the password reset link containing the token
+	if err := sendPasswordResetEmail(passwordReset.Email, token); err != nil {
+		utils.HandleError(w, err, http.StatusInternalServerError)
+		return
+	}
+	utils.JSONResponse(w, http.StatusOK, utils.APIResponse{
+		Type:    "success",
+		Message: "password reset link sent",
+	})
+}
 
 func (c PasswordResetLinkController) Update(w http.ResponseWriter, r *http.Request) {
 	// Handle PUT /passwordresetlinkcontroller/{id} request
@@ -80,7 +96,6 @@ func (c PasswordResetLinkController) Update(w http.ResponseWriter, r *http.Reque
 func (c PasswordResetLinkController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Handle DELETE /passwordresetlinkcontroller/{id} request
 }
-
 
 func sendPasswordResetEmail(email, token string) error {
 	// Create a new password reset email

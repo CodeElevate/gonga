@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"context"
+	"errors"
 	"gonga/utils"
 	"net/http"
 	// "strings"
@@ -25,7 +26,7 @@ func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// Check if user is authenticated and get the user ID
 		authenticated, userID := utils.IsAuthenticate(r)
 		if !authenticated {
-			utils.JSONResponse(w, http.StatusUnauthorized, map[string]string{"error": "Unauthorized"})
+			utils.HandleError(w, errors.New("unauthorized"), http.StatusUnauthorized)
 			return
 		}
 

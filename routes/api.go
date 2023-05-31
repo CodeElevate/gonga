@@ -31,7 +31,7 @@ func RegisterApiRoutes(router *packages.MyRouter, db *gorm.DB) {
 	router.Get("/posts", PostController.Index)
 	router.Post("/posts", PostController.Create, middlewares.AuthMiddleware) //, middlewares.AuthMiddleware
 	router.Get("/posts/{id}", PostController.Show)
-	router.Put("/posts/{id}", PostController.Update, middlewares.AuthMiddleware)
+	// router.Put("/posts/{id}", PostController.Update, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/title", PostController.UpdateTitle, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/body", PostController.UpdateBody, middlewares.AuthMiddleware)
 	router.Put("/posts/{id}/medias", PostController.UpdateMedia, middlewares.AuthMiddleware)

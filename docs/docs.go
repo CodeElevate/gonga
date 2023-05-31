@@ -20,6 +20,390 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/comments/{id}": {
+            "get": {
+                "description": "Retrieves a specific comment by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Get a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Updates a specific comment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Update a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Comment Request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateCommentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a specific comment by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Delete a comment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/forgot-password": {
+            "post": {
+                "description": "Sends a password reset link to the user's email address",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Send password reset link",
+                "parameters": [
+                    {
+                        "description": "User email for password reset",
+                        "name": "resetPasswordRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.ResetPassowrdRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/likes": {
+            "post": {
+                "description": "Creates a new like",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Likes"
+                ],
+                "summary": "Create a new like",
+                "parameters": [
+                    {
+                        "description": "Like data",
+                        "name": "like",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.CreateLikeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/likes/{id}": {
+            "delete": {
+                "description": "Deletes a like",
+                "tags": [
+                    "Likes"
+                ],
+                "summary": "Delete a like",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Like ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Logs in a user with the provided credentials",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User login",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "loginRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/responses.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/posts": {
             "get": {
                 "description": "Retrieves a list of all posts from the server.",
@@ -34,24 +418,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.APIResponse"
+                            "$ref": "#/definitions/utils.SwaggerPagination"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.APIResponse"
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/utils.APIResponse"
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             },
             "post": {
+                "description": "Creates a new post",
                 "consumes": [
                     "application/json"
                 ],
@@ -64,7 +449,14 @@ const docTemplate = `{
                 "summary": "Create a new post",
                 "parameters": [
                     {
-                        "description": "Post data",
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Create post request body",
                         "name": "post",
                         "in": "body",
                         "required": true,
@@ -74,31 +466,28 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
@@ -106,13 +495,14 @@ const docTemplate = `{
         },
         "/posts/{id}": {
             "get": {
+                "description": "Retrieves the details of a specific post",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Get a post by ID",
+                "summary": "Get a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -126,33 +516,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             },
             "put": {
+                "description": "Updates the details of a specific post",
                 "consumes": [
                     "application/json"
                 ],
@@ -162,7 +550,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Update a post",
+                "summary": "Update a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -170,64 +558,41 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Post data",
-                        "name": "post",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/requests.UpdatePostRequest"
-                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             },
             "delete": {
+                "description": "Deletes a specific post",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Delete a post",
+                "summary": "Delete a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -241,28 +606,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
@@ -270,6 +638,7 @@ const docTemplate = `{
         },
         "/posts/{id}/body": {
             "put": {
+                "description": "Updates the body of a specific post",
                 "consumes": [
                     "application/json"
                 ],
@@ -279,7 +648,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Update the body of a post",
+                "summary": "Update the body of a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -302,44 +671,69 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             }
         },
         "/posts/{id}/comments": {
+            "get": {
+                "description": "Retrieves comments for a specific post",
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Get comments for a post",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerPagination"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            },
             "post": {
+                "description": "Creates a new comment for a specific post",
                 "consumes": [
                     "application/json"
                 ],
@@ -349,18 +743,25 @@ const docTemplate = `{
                 "tags": [
                     "Comments"
                 ],
-                "summary": "Add a comment to a post",
+                "summary": "Create a new comment",
                 "parameters": [
                     {
-                        "type": "integer",
+                        "type": "string",
                         "description": "Post ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
                         "description": "Comment data",
-                        "name": "comment",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -372,44 +773,33 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/posts/{id}/comments/{comment_id}": {
+        "/posts/{id}/hashtags": {
             "put": {
+                "description": "Updates the hashtags of a specific post",
                 "consumes": [
                     "application/json"
                 ],
@@ -417,9 +807,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Comments"
+                    "Posts"
                 ],
-                "summary": "Update a comment on a post",
+                "summary": "Update the hashtags of a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -429,19 +819,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "description": "Comment ID",
-                        "name": "comment_id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Comment data",
-                        "name": "comment",
+                        "description": "Post hashtag data",
+                        "name": "post",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/requests.UpdateCommentRequest"
+                            "$ref": "#/definitions/requests.UpdatePostHashtagRequest"
                         }
                     }
                 ],
@@ -449,105 +832,43 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Comments"
-                ],
-                "summary": "Delete a comment from a post",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Post ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Comment ID",
-                        "name": "comment_id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/posts/{id}/like": {
-            "post": {
+        "/posts/{id}/medias": {
+            "put": {
+                "description": "Updates the medias of a specific post",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Like a post",
+                "summary": "Update the medias of a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -555,34 +876,99 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Post media data",
+                        "name": "post",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdatePostMediaRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/posts/{id}/settings": {
+            "put": {
+                "description": "Updates the settings of a specific post",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Update the settings of a specific post",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Post ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Post settings data",
+                        "name": "post",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdatePostSettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerSuccessResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
@@ -590,6 +976,7 @@ const docTemplate = `{
         },
         "/posts/{id}/title": {
             "put": {
+                "description": "Updates the title of a specific post",
                 "consumes": [
                     "application/json"
                 ],
@@ -599,7 +986,7 @@ const docTemplate = `{
                 "tags": [
                     "Posts"
                 ],
-                "summary": "Update the title of a post",
+                "summary": "Update the title of a specific post",
                 "parameters": [
                     {
                         "type": "integer",
@@ -622,125 +1009,318 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     }
                 }
             }
         },
-        "/posts/{id}/unlike": {
+        "/register": {
             "post": {
+                "description": "Registers a new user with the provided information",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Posts"
+                    "Authentication"
                 ],
-                "summary": "Unlike a post",
+                "summary": "User registration",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "Post ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
+                        "description": "User registration data",
+                        "name": "registerRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.RegisterRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/responses.RegisterResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
-                            }
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                            "$ref": "#/definitions/utils.SwaggerErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/upload": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Upload media files",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Media"
+                ],
+                "summary": "Upload media files",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Media files to upload",
+                        "name": "files",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Type of the owner of the media file",
+                        "name": "owner_type",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "ID of the owner of the media file",
+                        "name": "owner_id",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/responses.UploadMediaResponse"
                             }
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Retrieve a paginated list of users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get a list of users with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     }
                 }
             }
         },
         "/users/{id}": {
-            "get": {
-                "description": "Get user information by user ID",
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a user by their ID",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Get user by ID",
-                "operationId": "get-user-by-id",
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
+                        "type": "string",
+                        "description": "ID of the user to delete",
                         "name": "id",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "204": {
+                        "description": "success"
+                    },
+                    "404": {
+                        "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/controllers.UserResponse"
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{username}": {
+            "get": {
+                "description": "Retrieve a user by their username",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get a user by username",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username of the user to retrieve",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     },
                     "404": {
-                        "description": "Not Found",
+                        "description": "error",
                         "schema": {
-                            "$ref": "#/definitions/controllers.ErrorResponse"
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the details of a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Username of the user to update",
+                        "name": "username",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update request body",
+                        "name": "updateReq",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/requests.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.APIResponse"
                         }
                     }
                 }
@@ -751,42 +1331,93 @@ const docTemplate = `{
         "Models.Mention": {
             "type": "object"
         },
-        "controllers.ErrorResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string"
-                }
-            }
+        "Models.Tag": {
+            "type": "object"
         },
-        "controllers.UserResponse": {
-            "type": "object",
-            "properties": {
-                "body": {
-                    "description": "in:body",
-                    "type": "object",
-                    "properties": {
-                        "email": {
-                            "type": "string"
-                        },
-                        "id": {
-                            "type": "integer"
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "password": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
+        "Models.Visibility": {
+            "type": "string",
+            "enum": [
+                "public",
+                "private",
+                "friends"
+            ],
+            "x-enum-varnames": [
+                "VisibilityPublic",
+                "VisibilityPrivate",
+                "VisibilityFriends"
+            ]
         },
         "requests.CreateCommentRequest": {
             "type": "object"
         },
+        "requests.CreateLikeRequest": {
+            "type": "object",
+            "required": [
+                "likeable_id",
+                "likeable_type"
+            ],
+            "properties": {
+                "likeable_id": {
+                    "type": "integer"
+                },
+                "likeable_type": {
+                    "type": "string"
+                }
+            }
+        },
         "requests.CreatePostRequest": {
             "type": "object"
+        },
+        "requests.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 5,
+                    "minLength": 3
+                }
+            }
+        },
+        "requests.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 8
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 5,
+                    "minLength": 3
+                }
+            }
+        },
+        "requests.ResetPassowrdRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
         },
         "requests.UpdateCommentRequest": {
             "type": "object",
@@ -826,8 +1457,48 @@ const docTemplate = `{
                 }
             }
         },
-        "requests.UpdatePostRequest": {
+        "requests.UpdatePostHashtagRequest": {
+            "type": "object",
+            "properties": {
+                "hashtags": {
+                    "type": "array",
+                    "maxItems": 5,
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/Models.Tag"
+                    }
+                }
+            }
+        },
+        "requests.UpdatePostMediaRequest": {
             "type": "object"
+        },
+        "requests.UpdatePostSettingsRequest": {
+            "type": "object",
+            "required": [
+                "featured_expiry",
+                "is_featured",
+                "is_promoted",
+                "promotion_expiry",
+                "visibility"
+            ],
+            "properties": {
+                "featured_expiry": {
+                    "type": "string"
+                },
+                "is_featured": {
+                    "type": "boolean"
+                },
+                "is_promoted": {
+                    "type": "boolean"
+                },
+                "promotion_expiry": {
+                    "type": "string"
+                },
+                "visibility": {
+                    "$ref": "#/definitions/Models.Visibility"
+                }
+            }
         },
         "requests.UpdatePostTitleRequest": {
             "type": "object",
@@ -838,6 +1509,115 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "minLength": 20
+                }
+            }
+        },
+        "requests.UpdateUserRequest": {
+            "type": "object",
+            "required": [
+                "first_name",
+                "mobile_no_code"
+            ],
+            "properties": {
+                "avatar_url": {
+                    "type": "string"
+                },
+                "background_image_url": {
+                    "type": "string"
+                },
+                "bio": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "birthday": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "country": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "education": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "male",
+                        "female"
+                    ]
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "mobile_no": {
+                    "type": "string"
+                },
+                "mobile_no_code": {
+                    "type": "string"
+                },
+                "occupation": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "website_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "responses.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.RegisterResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "token": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "responses.UploadMediaResponse": {
+            "type": "object",
+            "properties": {
+                "filename": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "size": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
@@ -891,6 +1671,51 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "utils.SwaggerErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/utils.APIError"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.SwaggerPagination": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "utils.SwaggerSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
         }
     }
 }`
@@ -899,7 +1724,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Gonga API Documentation",
 	Description:      "This is the Swagger documentation for the Gonga API.",
