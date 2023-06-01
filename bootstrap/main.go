@@ -6,6 +6,7 @@ import (
 	_ "gonga/docs"
 	"gonga/packages"
 	"gonga/routes"
+	"gonga/utils"
 	"net/http"
 
 	"github.com/pterm/pterm"
@@ -33,7 +34,7 @@ func (app *Application) RegisterApiRoutes() {
 	app.Router.Use(middlewares.CorsMiddleware).StrictSlash(true)
 	app.Router.Use(middlewares.ThrottleMiddleware).StrictSlash(true)
 	app.Router.Use(middlewares.LogMiddleware).StrictSlash(true)
-	
+
 	// Serve swagger UI
 	app.Router.PathPrefix("/docs/").Handler(httpSwagger.Handler())
 
@@ -52,6 +53,8 @@ func (app *Application) ConnectDatabase() error {
 
 // Run starts the Golang application.
 func (app *Application) Run() error {
-	pterm.Info.Println("Server started on [http://localhost:8080]")
-	return http.ListenAndServe(":8080", app.Router)
+	port := utils.Env("PORT", "8080")
+	address := ":" + port
+	pterm.Info.Println("Server started on [http://localhost" + address + "]")
+	return http.ListenAndServe(address, app.Router)
 }

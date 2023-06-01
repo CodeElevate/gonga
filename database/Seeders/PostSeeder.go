@@ -30,7 +30,7 @@ func (s *PostSeeder) Run() {
 	}
 
 	// Create and save dummy post records using the factory
-	for i := 0; i < 20000; i++ {
+	for i := 0; i < 2000; i++ {
 		post := factory.PostFactory()
 		post.User = &users[i%len(users)]
 		post.Hashtags = append(post.Hashtags, &tags[i%len(tags)])
