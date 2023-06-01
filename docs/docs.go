@@ -1730,7 +1730,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "https://gonga.up.railway.app",
+	Host:             "gonga.up.railway.app",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Gonga API Documentation",

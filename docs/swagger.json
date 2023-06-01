@@ -10,7 +10,7 @@
         },
         "version": "1.0"
     },
-    "host": "https://gonga.up.railway.app",
+    "host": "gonga.up.railway.app",
     "basePath": "/",
     "paths": {
         "/comments/{id}": {

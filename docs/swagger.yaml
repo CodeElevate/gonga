@@ -268,7 +268,7 @@ definitions:
       type:
         type: string
     type: object
-host: https://gonga.up.railway.app
+host: gonga.up.railway.app
 info:
   contact:
     email: your.email@example.com

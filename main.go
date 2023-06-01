@@ -11,7 +11,7 @@ var App *bootstrap.Application
 //	@title			Gonga API Documentation
 //	@version		1.0
 //	@description	This is the Swagger documentation for the Gonga API.
-//	@host			https://gonga.up.railway.app
+//	@host			gonga.up.railway.app
 //	@BasePath		/
 //	@contact.name	Krishan Kumar
 //	@contact.email	your.email@example.com
