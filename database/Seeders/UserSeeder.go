@@ -19,7 +19,7 @@ func (s *UserSeeder) Run() {
 
 	// Create and save dummy user records using the factory
 	UserNameGenerator := imaginary.NewUserNameGenerator()
-	for i := 0; i < 5000; i++ {
+	for i := 0; i < 500; i++ {
 		user := factory.UserFactory()
 		user.Username = UserNameGenerator.UserName()
 		if err := db.Create(&user).Error; err != nil {

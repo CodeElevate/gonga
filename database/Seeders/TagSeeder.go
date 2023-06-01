@@ -26,7 +26,7 @@ func (s *TagSeeder) Run() {
 
 	// Create and save dummy tag records using the factory
 	tagGenerator := imaginary.NewTagGenerator()
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < 100; i++ {
 		tag := factory.TagFactory()
 		tag.User = users[i%len(users)]
 		tag.Title = tagGenerator.UniqueTag()

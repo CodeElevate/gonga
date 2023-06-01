@@ -30,7 +30,7 @@ func (s *CommentSeeder) Run() {
 	}
 
 	// Create and save dummy comment records using the factory
-	for i := 0; i < 400000; i++ {
+	for i := 0; i < 4000; i++ {
 		comment := factory.CommentFactory()
 		comment.User = &users[i%len(users)]
 		comment.Post = &posts[i%len(posts)]
