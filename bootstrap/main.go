@@ -55,6 +55,7 @@ func (app *Application) ConnectDatabase() error {
 func (app *Application) Run() error {
 	port := utils.Env("PORT", "8080")
 	address := ":" + port
-	pterm.Info.Println("Server started on [http://localhost" + address + "]")
+	appUrl := utils.Env("APP_URL", "http://localhost"+address)
+	pterm.Info.Println("Server started on [" + appUrl + "]")
 	return http.ListenAndServe(address, app.Router)
 }
