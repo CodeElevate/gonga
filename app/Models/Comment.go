@@ -18,7 +18,6 @@ type Comment struct {
 	Mentions  []*Mention `json:"mentions" gorm:"polymorphic:Owner;"`
 }
 
-
 func (Comment) TableName() string {
 	return "comments"
 }
