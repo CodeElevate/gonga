@@ -28,16 +28,16 @@ func (c RegisterController) Show(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to register by providing their username, email, and password.
 //
-// @Summary User registration
-// @Description Registers a new user with the provided information
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param registerRequest body requests.RegisterRequest true "User registration data"
-// @Success 200 {object} responses.RegisterResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /register [post]
+//	@Summary		User registration
+//	@Description	Registers a new user with the provided information
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			registerRequest	body		requests.RegisterRequest	true	"User registration data"
+//	@Success		200				{object}	responses.RegisterResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		500				{object}	utils.SwaggerErrorResponse
+//	@Router			/register [post]
 func (c RegisterController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse request body
 	var user requests.RegisterRequest

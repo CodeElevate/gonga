@@ -8,14 +8,14 @@ import (
 
 var App *bootstrap.Application
 
-// @title			Gonga API Documentation
-// @version		1.0
-// @description	This is the Swagger documentation for the Gonga API.
-// @host			localhost:8080
-// @BasePath		/
-// @contact.name	Your Name
-// @contact.email	your.email@example.com
-// @contact.url	http://your-website.com
+//	@title			Gonga API Documentation
+//	@version		1.0
+//	@description	This is the Swagger documentation for the Gonga API.
+//	@host			https://gonga.up.railway.app
+//	@BasePath		/
+//	@contact.name	Krishan Kumar
+//	@contact.email	your.email@example.com
+//	@contact.url	https://www.linkedin.com/in/kkumar-gcc
 func main() {
 	bootstrap.LoadEnv()
 

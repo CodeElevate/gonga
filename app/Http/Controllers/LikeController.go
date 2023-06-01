@@ -27,17 +27,17 @@ func (c LikeController) Show(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to create a new like for a specific likeable item.
 //
-// @Summary Create a new like
-// @Description Creates a new like
-// @Tags Likes
-// @Accept json
-// @Produce json
-// @Param like body requests.CreateLikeRequest true "Like data"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /likes [post]
+//	@Summary		Create a new like
+//	@Description	Creates a new like
+//	@Tags			Likes
+//	@Accept			json
+//	@Produce		json
+//	@Param			like	body		requests.CreateLikeRequest	true	"Like data"
+//	@Success		200		{object}	utils.SwaggerSuccessResponse
+//	@Failure		400		{object}	utils.SwaggerErrorResponse
+//	@Failure		401		{object}	utils.SwaggerErrorResponse
+//	@Failure		500		{object}	utils.SwaggerErrorResponse
+//	@Router			/likes [post]
 func (c LikeController) Create(w http.ResponseWriter, r *http.Request) {
 	userID, err := utils.GetUserIDFromContext(r.Context())
 
@@ -110,16 +110,16 @@ func (c LikeController) Update(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to delete a like based on its ID.
 //
-// @Summary Delete a like
-// @Description Deletes a like
-// @Tags Likes
-// @Param id path string true "Like ID"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /likes/{id} [delete]
+//	@Summary		Delete a like
+//	@Description	Deletes a like
+//	@Tags			Likes
+//	@Param			id	path		string	true	"Like ID"
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/likes/{id} [delete]
 func (c LikeController) Delete(w http.ResponseWriter, r *http.Request) {
 	likeID, err := utils.GetParam(r, "id") // Get the like ID from the URL parameter
 	if err != nil {

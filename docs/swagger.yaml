@@ -268,12 +268,12 @@ definitions:
       type:
         type: string
     type: object
-host: localhost:8080
+host: https://gonga.up.railway.app
 info:
   contact:
     email: your.email@example.com
-    name: Your Name
-    url: http://your-website.com
+    name: Krishan Kumar
+    url: https://www.linkedin.com/in/kkumar-gcc
   description: This is the Swagger documentation for the Gonga API.
   title: Gonga API Documentation
   version: "1.0"

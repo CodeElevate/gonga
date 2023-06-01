@@ -27,17 +27,17 @@ func (c LoginController) Show(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to log in by providing their username and password.
 //
-// @Summary User login
-// @Description Logs in a user with the provided credentials
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param loginRequest body requests.LoginRequest true "Login credentials"
-// @Success 200 {object} responses.LoginResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /login [post]
+//	@Summary		User login
+//	@Description	Logs in a user with the provided credentials
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			loginRequest	body		requests.LoginRequest	true	"Login credentials"
+//	@Success		200				{object}	responses.LoginResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		401				{object}	utils.SwaggerErrorResponse
+//	@Failure		500				{object}	utils.SwaggerErrorResponse
+//	@Router			/login [post]
 func (c LoginController) Create(w http.ResponseWriter, r *http.Request) {
 	// Handle POST /logincontroller request
 	// You can get the request body by reading from r.Body

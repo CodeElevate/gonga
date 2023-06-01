@@ -30,17 +30,17 @@ func (c PasswordResetLinkController) Show(w http.ResponseWriter, r *http.Request
 //
 // This endpoint allows users to request a password reset by providing their email address.
 //
-// @Summary Send password reset link
-// @Description Sends a password reset link to the user's email address
-// @Tags Authentication
-// @Accept json
-// @Produce json
-// @Param resetPasswordRequest body requests.ResetPassowrdRequest true "User email for password reset"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /forgot-password [post]
+//	@Summary		Send password reset link
+//	@Description	Sends a password reset link to the user's email address
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			resetPasswordRequest	body		requests.ResetPassowrdRequest	true	"User email for password reset"
+//	@Success		200						{object}	utils.SwaggerSuccessResponse
+//	@Failure		400						{object}	utils.SwaggerErrorResponse
+//	@Failure		404						{object}	utils.SwaggerErrorResponse
+//	@Failure		500						{object}	utils.SwaggerErrorResponse
+//	@Router			/forgot-password [post]
 func (c PasswordResetLinkController) Create(w http.ResponseWriter, r *http.Request) {
 	var resetPassword requests.ResetPassowrdRequest
 	if err := utils.DecodeJSONBody(w, r, &resetPassword); err != nil {

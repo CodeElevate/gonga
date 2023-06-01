@@ -23,14 +23,14 @@ type PostController struct {
 //
 // The API response is in JSON format.
 //
-// @Summary Get all posts
-// @Description Retrieves a list of all posts from the server.
-// @Tags Posts
-// @Produce json
-// @Success 200 {object} utils.SwaggerPagination
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Router /posts [get]
+//	@Summary		Get all posts
+//	@Description	Retrieves a list of all posts from the server.
+//	@Tags			Posts
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerPagination
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts [get]
 func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 	var posts []Models.Post
 	var response utils.APIResponse
@@ -58,16 +58,16 @@ func (c PostController) Index(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to retrieve the details of a specific post identified by its ID.
 //
-// @Summary Get a specific post
-// @Description Retrieves the details of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id} [get]
+//	@Summary		Get a specific post
+//	@Description	Retrieves the details of a specific post
+//	@Tags			Posts
+//	@Param			id	path	int	true	"Post ID"
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id} [get]
 func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postId, err := utils.GetParam(r, "id")
@@ -106,18 +106,18 @@ func (c PostController) Show(w http.ResponseWriter, r *http.Request) {
 // This endpoint allows users to create a new post by providing the necessary details in the request body.
 // The request body should contain the post title, body, visibility, promotion and featured settings, media files, mentions, and hashtags.
 //
-// @Summary Create a new post
-// @Description Creates a new post
-// @Tags Posts
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Param post body requests.CreatePostRequest true "Create post request body"
-// @Success 201 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts [post]
+//	@Summary		Create a new post
+//	@Description	Creates a new post
+//	@Tags			Posts
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string						true	"Bearer token"
+//	@Param			post			body		requests.CreatePostRequest	true	"Create post request body"
+//	@Success		201				{object}	utils.SwaggerSuccessResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		401				{object}	utils.SwaggerErrorResponse
+//	@Failure		500				{object}	utils.SwaggerErrorResponse
+//	@Router			/posts [post]
 func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 	// Parse update request from request body
 	var createReq requests.CreatePostRequest
@@ -241,16 +241,16 @@ func (c PostController) Create(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the details of a specific post identified by its ID.
 //
-// @Summary Update a specific post
-// @Description Updates the details of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.APIResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id} [put]
+//	@Summary		Update a specific post
+//	@Description	Updates the details of a specific post
+//	@Tags			Posts
+//	@Param			id	path	int	true	"Post ID"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.APIResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id} [put]
 func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 	// Handle PUT /postcontroller/{id} request
 	// You can get the request body by reading from r.Body
@@ -277,18 +277,18 @@ func (c PostController) Update(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the title of a specific post identified by its ID.
 //
-// @Summary Update the title of a specific post
-// @Description Updates the title of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Param		post	body		requests.UpdatePostTitleRequest	true	"Post title data"
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Success 200 {object} utils.APIResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/title [put]
+//	@Summary		Update the title of a specific post
+//	@Description	Updates the title of a specific post
+//	@Tags			Posts
+//	@Param			id		path	int								true	"Post ID"
+//	@Param			post	body	requests.UpdatePostTitleRequest	true	"Post title data"
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"Bearer token"
+//	@Success		200				{object}	utils.APIResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		401				{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/title [put]
 func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -360,18 +360,18 @@ func (c PostController) UpdateTitle(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the body of a specific post identified by its ID.
 //
-// @Summary Update the body of a specific post
-// @Description Updates the body of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Param post body requests.UpdatePostBodyRequest true "Post body data"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/body [put]
+//	@Summary		Update the body of a specific post
+//	@Description	Updates the body of a specific post
+//	@Tags			Posts
+//	@Param			id		path	int								true	"Post ID"
+//	@Param			post	body	requests.UpdatePostBodyRequest	true	"Post body data"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/body [put]
 func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -450,18 +450,18 @@ func (c PostController) UpdateBody(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the medias of a specific post identified by its ID.
 //
-// @Summary Update the medias of a specific post
-// @Description Updates the medias of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Param post body requests.UpdatePostMediaRequest true "Post media data"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/medias [put]
+//	@Summary		Update the medias of a specific post
+//	@Description	Updates the medias of a specific post
+//	@Tags			Posts
+//	@Param			id		path	int								true	"Post ID"
+//	@Param			post	body	requests.UpdatePostMediaRequest	true	"Post media data"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/medias [put]
 func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -530,18 +530,18 @@ func (c PostController) UpdateMedia(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the hashtags of a specific post identified by its ID.
 //
-// @Summary Update the hashtags of a specific post
-// @Description Updates the hashtags of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Param post body requests.UpdatePostHashtagRequest true "Post hashtag data"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/hashtags [put]
+//	@Summary		Update the hashtags of a specific post
+//	@Description	Updates the hashtags of a specific post
+//	@Tags			Posts
+//	@Param			id		path	int									true	"Post ID"
+//	@Param			post	body	requests.UpdatePostHashtagRequest	true	"Post hashtag data"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/hashtags [put]
 func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	userID, err := utils.GetUserIDFromContext(r.Context())
@@ -598,18 +598,18 @@ func (c PostController) UpdateHashtag(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows users to update the settings of a specific post identified by its ID.
 //
-// @Summary Update the settings of a specific post
-// @Description Updates the settings of a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Param post body requests.UpdatePostSettingsRequest true "Post settings data"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/settings [put]
+//	@Summary		Update the settings of a specific post
+//	@Description	Updates the settings of a specific post
+//	@Tags			Posts
+//	@Param			id		path	int									true	"Post ID"
+//	@Param			post	body	requests.UpdatePostSettingsRequest	true	"Post settings data"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/settings [put]
 func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	postID, err := utils.GetParam(r, "id")
@@ -675,18 +675,18 @@ func (c *PostController) UpdatePostSettings(w http.ResponseWriter, r *http.Reque
 //
 // This endpoint allows users to delete a specific post identified by its ID.
 //
-// @Summary Delete a specific post
-// @Description Deletes a specific post
-// @Tags Posts
-// @Param id path int true "Post ID"
-// @Accept json
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id} [delete]
+//	@Summary		Delete a specific post
+//	@Description	Deletes a specific post
+//	@Tags			Posts
+//	@Param			id	path	int	true	"Post ID"
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		401	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id} [delete]
 func (c *PostController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Parse post ID from request parameters
 	postID, err := utils.GetParam(r, "id")

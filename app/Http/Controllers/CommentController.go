@@ -23,14 +23,14 @@ type CommentController struct {
 //
 // This endpoint allows users to retrieve comments for a specific post based on its ID.
 //
-// @Summary Get comments for a post
-// @Description Retrieves comments for a specific post
-// @Tags Comments
-// @Param id path string true "Post ID"
-// @Success 200 {object} utils.SwaggerPagination
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/comments [get]
+//	@Summary		Get comments for a post
+//	@Description	Retrieves comments for a specific post
+//	@Tags			Comments
+//	@Param			id	path		string	true	"Post ID"
+//	@Success		200	{object}	utils.SwaggerPagination
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/comments [get]
 func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 	// Handle GET /postcontroller/{id} request
 	postID, err := utils.GetParam(r, "id")
@@ -75,16 +75,16 @@ func (c CommentController) Index(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint retrieves a specific comment by its ID.
 //
-// @Summary Get a comment
-// @Description Retrieves a specific comment by its ID
-// @Tags Comments
-// @Param id path string true "Comment ID"
-// @Produce json
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /comments/{id} [get]
+//	@Summary		Get a comment
+//	@Description	Retrieves a specific comment by its ID
+//	@Tags			Comments
+//	@Param			id	path	string	true	"Comment ID"
+//	@Produce		json
+//	@Success		200	{object}	utils.SwaggerSuccessResponse
+//	@Failure		400	{object}	utils.SwaggerErrorResponse
+//	@Failure		404	{object}	utils.SwaggerErrorResponse
+//	@Failure		500	{object}	utils.SwaggerErrorResponse
+//	@Router			/comments/{id} [get]
 func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 	commentID, err := utils.GetParam(r, "id")
 	if err != nil {
@@ -120,19 +120,19 @@ func (c CommentController) Show(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint allows authenticated users to create a new comment for a specific post.
 //
-// @Summary Create a new comment
-// @Description Creates a new comment for a specific post
-// @Tags Comments
-// @Param id path string true "Post ID"
-// @Param Authorization header string true "Bearer token"
-// @Accept json
-// @Produce json
-// @Param body body requests.CreateCommentRequest true "Comment data"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /posts/{id}/comments [post]
+//	@Summary		Create a new comment
+//	@Description	Creates a new comment for a specific post
+//	@Tags			Comments
+//	@Param			id				path	string	true	"Post ID"
+//	@Param			Authorization	header	string	true	"Bearer token"
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		requests.CreateCommentRequest	true	"Comment data"
+//	@Success		200		{object}	utils.SwaggerSuccessResponse
+//	@Failure		400		{object}	utils.SwaggerErrorResponse
+//	@Failure		401		{object}	utils.SwaggerErrorResponse
+//	@Failure		500		{object}	utils.SwaggerErrorResponse
+//	@Router			/posts/{id}/comments [post]
 func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 	postIDStr, err := utils.GetParam(r, "id")
 	if err != nil {
@@ -219,20 +219,20 @@ func (c CommentController) Create(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint updates a specific comment by its ID.
 //
-// @Summary Update a comment
-// @Description Updates a specific comment by its ID
-// @Tags Comments
-// @Param id path string true "Comment ID"
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Param body body requests.UpdateCommentRequest true "Update Comment Request"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /comments/{id} [put]
+//	@Summary		Update a comment
+//	@Description	Updates a specific comment by its ID
+//	@Tags			Comments
+//	@Param			id	path	string	true	"Comment ID"
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string							true	"Bearer token"
+//	@Param			body			body		requests.UpdateCommentRequest	true	"Update Comment Request"
+//	@Success		200				{object}	utils.SwaggerSuccessResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		401				{object}	utils.SwaggerErrorResponse
+//	@Failure		404				{object}	utils.SwaggerErrorResponse
+//	@Failure		500				{object}	utils.SwaggerErrorResponse
+//	@Router			/comments/{id} [put]
 func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")
@@ -304,19 +304,19 @@ func (c CommentController) Update(w http.ResponseWriter, r *http.Request) {
 //
 // This endpoint deletes a specific comment by its ID.
 //
-// @Summary Delete a comment
-// @Description Deletes a specific comment by its ID
-// @Tags Comments
-// @Param id path string true "Comment ID"
-// @Accept json
-// @Produce json
-// @Param Authorization header string true "Bearer token"
-// @Success 200 {object} utils.SwaggerSuccessResponse
-// @Failure 400 {object} utils.SwaggerErrorResponse
-// @Failure 401 {object} utils.SwaggerErrorResponse
-// @Failure 404 {object} utils.SwaggerErrorResponse
-// @Failure 500 {object} utils.SwaggerErrorResponse
-// @Router /comments/{id} [delete]
+//	@Summary		Delete a comment
+//	@Description	Deletes a specific comment by its ID
+//	@Tags			Comments
+//	@Param			id	path	string	true	"Comment ID"
+//	@Accept			json
+//	@Produce		json
+//	@Param			Authorization	header		string	true	"Bearer token"
+//	@Success		200				{object}	utils.SwaggerSuccessResponse
+//	@Failure		400				{object}	utils.SwaggerErrorResponse
+//	@Failure		401				{object}	utils.SwaggerErrorResponse
+//	@Failure		404				{object}	utils.SwaggerErrorResponse
+//	@Failure		500				{object}	utils.SwaggerErrorResponse
+//	@Router			/comments/{id} [delete]
 func (c CommentController) Delete(w http.ResponseWriter, r *http.Request) {
 	// Extract the comment ID from the URL path parameters
 	commentID, err := utils.GetParam(r, "id")

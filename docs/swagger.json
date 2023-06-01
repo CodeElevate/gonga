@@ -4,13 +4,13 @@
         "description": "This is the Swagger documentation for the Gonga API.",
         "title": "Gonga API Documentation",
         "contact": {
-            "name": "Your Name",
-            "url": "http://your-website.com",
+            "name": "Krishan Kumar",
+            "url": "https://www.linkedin.com/in/kkumar-gcc",
             "email": "your.email@example.com"
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "https://gonga.up.railway.app",
     "basePath": "/",
     "paths": {
         "/comments/{id}": {
